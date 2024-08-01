@@ -3,7 +3,11 @@ import React, { useEffect, useState } from 'react';
 import { Checkbox, Button, InputLabel, Input, FormControl, MenuItem, Select } from '@mui/material';
 import handleClick from './HandleClick';
 import parseJsonString from './Parser';
-import { gapi } from 'gapi-script';
+import { GoogleSpreadsheet } from 'google-spreadsheet';
+import { JWT } from 'google-auth-library';
+import { env } from '~/env';
+import { useSession } from 'next-auth/react';
+import {create_spreatsheet} from '~/server/actions'
 //import PersonIcon from '@mui/icons-material/Person'; // Adjust the path to the actual location of the user icon image
 
 let sessionCounter = 1;
@@ -32,49 +36,10 @@ const SerialPortComponent: React.FC = () => {
     const [hybridMaskOptions, setHybridMaskOptions] = useState<number>(0);
     const [showAdditionalDetails, setShowAdditionalDetails] = useState<boolean>(false);
 
-    useEffect(() => {
-        const loadGapi = () => {
-            const script = document.createElement('script');
-            script.src = 'https://apis.google.com/js/api.js';
-            script.async = true;
-            script.defer = true;
-            script.onload = () => {
-                gapi.load('client:auth2', initClient);
-            };
-            document.body.appendChild(script);
-        };
     
-        const initClient = () => {
-            gapi.client.init({
-                apiKey: process.env.API_KEY,
-                clientId: process.env.AUTH_GOOGLE_ID,
-                discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
-                scope: 'https://www.googleapis.com/auth/spreadsheets',
-            }).then(() => {
-                console.log('GAPI client initialized.');
-                const authInstance = gapi.auth2.getAuthInstance();
-                if (authInstance) {
-                    if (authInstance.isSignedIn.get()) {
-                        console.log('User is signed in.');
-                    } else {
-                        console.log('User is not signed in.');
-                        authInstance.signIn().then(() => {
-                            console.log('User signed in.');
-                        }).catch((error:any) => {
-                            console.error('Error signing in:', error);
-                        });
-                    }
-                } else {
-                    console.error('Auth instance is not available.');
-                }
-            }).catch((error:any) => {
-                console.error('Error initializing GAPI client:', error);
-            });
-        };
-    
-        loadGapi();
-    }, []);
-
+   
+   
+   
     const handleDataReceived = (data: string) => {
         const parsedData = parseJsonString(data);
         console.log(parsedData);
@@ -123,10 +88,8 @@ const SerialPortComponent: React.FC = () => {
         return `${product}-${counter.toString().padStart(3, '0')}`;
     };
 
-    const handleAccept = () => {
-        const uniqueId = generateUniqueId(deviceType, sessionCounter);
-        sessionCounter++;
-        createSpreadsheet(uniqueId, deviceEui, appEui, appKey);
+    const handleAccept  = async () => {
+        
     };
 
     const createSpreadsheet = (id: string, deviceEui: string, joinEui: string, appKey: string) => {
@@ -165,14 +128,7 @@ const SerialPortComponent: React.FC = () => {
             ],
         };
 
-        gapi.client.sheets.spreadsheets.create({}, spreadsheetBody).then(
-            (response: any) => {
-                console.log('Spreadsheet created successfully:', response);
-            },
-            (error: any) => {
-                console.error('Error creating spreadsheet:', error);
-            }
-        );
+       
     };
 
     const handleFinish = () => {
@@ -328,7 +284,7 @@ const SerialPortComponent: React.FC = () => {
                     </div>
                 )}
                 <div className="mt-4 flex justify-between">
-                    <Button onClick={handleAccept} style={{ backgroundColor: '#4CAF50', color: 'white', padding: '10px 20px' }}>
+                    <Button onClick={async () =>{await create_spreatsheet() }} style={{ backgroundColor: '#4CAF50', color: 'white', padding: '10px 20px' }}>
                         Accept
                     </Button>
                     <Button onClick={handleFinish} style={{ backgroundColor: '#f44336', color: 'white', padding: '10px 20px' }}>
