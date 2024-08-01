@@ -6,10 +6,14 @@ import { google } from "googleapis";
 export async function create_spreatsheet() {
   const session = await auth();
   console.log({ access_token: session?.user.token });
-  const client = new OAuth2Client();
+  const client = new OAuth2Client({});
+
   client.setCredentials({
     access_token: session?.user.token,
   });
+
+  const tokenInfo = await client.getTokenInfo(session?.user.token!);
+  console.log(tokenInfo);
 
   const service = google.sheets({ version: "v4", auth: client });
   const resource = {

@@ -16,6 +16,8 @@ export const {
           prompt: "consent",
           access_type: "offline",
           response_type: "code",
+          //  https://www.googleapis.com/auth/spreadsheets
+          scope: "https://www.googleapis.com/auth/spreadsheets",
         },
       },
     }),
