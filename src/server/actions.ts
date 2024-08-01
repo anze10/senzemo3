@@ -1,43 +1,33 @@
-'use server'
-import { auth } from '~/server/auth'
-import { signIn, signOut } from "src/server/auth";
-import { GoogleSpreadsheet } from 'google-spreadsheet';
-import { JWT } from 'google-auth-library';
-import { env } from '~/env';
-
+"use server";
+import { auth } from "~/server/auth";
+import { OAuth2Client } from "google-auth-library";
+import { google } from "googleapis";
 
 export async function create_spreatsheet() {
-  const title = 'My new spreadsheet';
-  const { GoogleAuth } = require('google-auth-library');
-  const { google } = require('googleapis');
   const session = await auth();
-  if (!session?.user?.email) {
-    console.log("User is not logged in");
-    return;
-  }
-  const avth = new GoogleAuth({
-    email: session?.user?.email,
-    key: env.NEXT_PUBLIC_API_KEY,
-    scopes: 'https://www.googleapis.com/auth/spreadsheets',
+  console.log({ access_token: session?.user.token });
+  const client = new OAuth2Client();
+  client.setCredentials({
+    access_token: session?.user.token,
   });
 
-  const service = google.sheets({ version: 'v4', avth });
+  const service = google.sheets({ version: "v4", auth: client });
   const resource = {
     properties: {
-      title,
+      title: "New Spreadshit",
     },
   };
+
   try {
-    const spreadsheet = await service.spreadsheets.create({
+    const spreadsheet = service.spreadsheets.create({
       resource,
-      fields: 'spreadsheetId',
+      fields: "spreadsheetId",
     });
     console.log(`Spreadsheet ID: ${spreadsheet.data.spreadsheetId}`);
     return spreadsheet.data.spreadsheetId;
   } catch (err) {
-    console.log(err);
     // TODO (developer) - Handle exception
+    console.error("Google spreadshit error", err);
     throw err;
-    console.log(err);
   }
 }
