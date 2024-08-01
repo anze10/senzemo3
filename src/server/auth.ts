@@ -16,8 +16,14 @@ export const {
           prompt: "consent",
           access_type: "offline",
           response_type: "code",
-          //  https://www.googleapis.com/auth/spreadsheets
-          scope: "https://www.googleapis.com/auth/spreadsheets",
+          scope: [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "openid",
+            "profile",
+            "email",
+          ].join(" "),
         },
       },
     }),

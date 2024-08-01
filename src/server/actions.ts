@@ -23,15 +23,17 @@ export async function create_spreatsheet() {
   };
 
   try {
-    const spreadsheet = service.spreadsheets.create({
-      resource,
-      fields: "spreadsheetId",
-    });
-    console.log(`Spreadsheet ID: ${spreadsheet.data.spreadsheetId}`);
-    return spreadsheet.data.spreadsheetId;
+    const spreadsheet = await service.spreadsheets
+      .create({
+        resource,
+        fields: "spreadsheetId",
+      })
+      .then((response) => {
+        console.log(response.data);
+      });
   } catch (err) {
     // TODO (developer) - Handle exception
-    console.error("Google spreadshit error", err);
+    console.error("Google spreadshit error");
     throw err;
   }
 }
