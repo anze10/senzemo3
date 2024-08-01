@@ -7,7 +7,7 @@ import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
 import { env } from '~/env';
 import { useSession } from 'next-auth/react';
-import {create_spreatsheet} from '~/server/actions'
+import { create_spreatsheet } from '~/server/actions'
 //import PersonIcon from '@mui/icons-material/Person'; // Adjust the path to the actual location of the user icon image
 
 let sessionCounter = 1;
@@ -36,10 +36,10 @@ const SerialPortComponent: React.FC = () => {
     const [hybridMaskOptions, setHybridMaskOptions] = useState<number>(0);
     const [showAdditionalDetails, setShowAdditionalDetails] = useState<boolean>(false);
 
-    
-   
-   
-   
+
+
+
+
     const handleDataReceived = (data: string) => {
         const parsedData = parseJsonString(data);
         console.log(parsedData);
@@ -88,8 +88,8 @@ const SerialPortComponent: React.FC = () => {
         return `${product}-${counter.toString().padStart(3, '0')}`;
     };
 
-    const handleAccept  = async () => {
-        
+    const handleAccept = async () => {
+
     };
 
     const createSpreadsheet = (id: string, deviceEui: string, joinEui: string, appKey: string) => {
@@ -128,11 +128,11 @@ const SerialPortComponent: React.FC = () => {
             ],
         };
 
-       
+
     };
 
     const handleFinish = () => {
-        
+
 
     };
 
@@ -284,7 +284,7 @@ const SerialPortComponent: React.FC = () => {
                     </div>
                 )}
                 <div className="mt-4 flex justify-between">
-                    <Button onClick={async () =>{await create_spreatsheet() }} style={{ backgroundColor: '#4CAF50', color: 'white', padding: '10px 20px' }}>
+                    <Button onClick={async () => { await create_spreatsheet() }} style={{ backgroundColor: '#4CAF50', color: 'white', padding: '10px 20px' }}>
                         Accept
                     </Button>
                     <Button onClick={handleFinish} style={{ backgroundColor: '#f44336', color: 'white', padding: '10px 20px' }}>

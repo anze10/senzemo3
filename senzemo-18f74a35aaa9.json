@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "senzemo",
+  "private_key_id": "18f74a35aaa9d6225e8a763a9fdaac62a056930d",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCHgALHOJUo6UGw\nuNk/bJC8oAJSdmuOzak0cSH8C+k56ZgyahjuJKLcS9vwUisBKkszRjraWWvdM6/p\nXcZFhkkBJ6U/vpEiHeIr1VCTfLZ57qDzFYLBfQfwiCeEuEkrHfETVk2jw2JW5Aig\nx8QeASynNY5/OEjY6gG65vo+G1IBb/jAvLCLIqAbz7PSwbq1rOpeVvSlROgh21hO\n87E5IMC+KVWkXylOE3KmUhWrOgLd3fIaCbLXdZH9ZHxtrxd2AAIFGAFs3iCjX208\n79OYxHw2jqZ1Sp5W/bmbS5QSDmSdAHDjMgWHlRxCB04o/wFCzM7RFJEkxaXlM8Ng\nHJuYqXg9AgMBAAECggEAFibNTXhomimX/aYajg3Xk56tAoItj0j78oDUR3pDBJ61\nrPg/Xx9KKK2WJTGpqiUZ6iX/FRctVRpQFdyov1D2umOa1lL3MxajlProk1P+GOz0\nDwljOPKRy7bWjxH5lDzu3nRreOxGNWJOLsq5uxYCEMvmodG3xw5qff2ox2J8A5Pn\nscCkvu/1G01YkUOXKb6Bw1jvUbgwSj/lQcQGbflKpRwb8o1YEjqM1e/SvHx7zMZK\ntfxZ2hMAzFS+wEaWyrFjTttMDrmhUQF1vItbQk9LxGVPIpBF1uZpiNqO8Ag6bSki\n6keO4UxdpisOHz/ptX+55a5EsKxfnNUD/lMcp9TDGQKBgQC/SskbMmxSz/43BoTM\n7Hls8hIjxzzhzWyAeVDgSpVbS9sgA6lzwXj2UQvsk3vWlfN5k10mswpQR946XGqK\nJbNV9Cb5lguW6gC2rp+spljQYwEfPhGWKhww4ZEbN431GDlM24Ktjkhsd0RVCAwf\n9ZfT/s2vm7mfmTEr4ZcF8JpNzwKBgQC1VdR2JqlNdQxpw30xhHEyKQ/yTaDBN822\nxfqM1YKi5Gez9poGaqi/s9Sl6E7eNpESZYgW0A2GD86JDlIZKIkftQfmMicS6Hhn\nwOT37n0cqTwb1tlBWXYMclS8jg+Y6ulCb+YtLuNKqPVuJ3Jzc3+jkyUiQ/fNr+tx\nU9IeEYqIMwKBgBOpTCJPfHLGjgp50Qx/AbwA5Xxn7goHYy+RSI7FG7TWhx8zQSd0\nq0ol6mPWhNP5dZz5WImxvU2jFWRKO2kXlucuwRLGKUrJomkkaaUFM/u3MVZUutoE\nWgFsLc3uV9jpNHqB1VyhUzBS0eMrgJOIWqKffeSezOVqiXNJLIyfvjxhAoGAVfqm\nTIc0SzeudQ9t8uabTW9O0lKgYDz3WywwCkrKMDYgPaI1kclMzeiUcT3e91nkG1bs\n2fQ4FVK1WSLjJm6j5dbOMgWhpUN4o6lAZ5Y62DYd/A044dVrNaeYKfcpyhXIF+o6\ntz2+I45NILeverJO2N5SAxc7DdnVxtw5imxCxSUCgYApgTfuCu1qDCJf6Cg35GGK\nsKCaVi4ufcl/L0Jeye1XiAz9eWvlOPn8oS6JADPIlCF3BaDKXNnoyKxwuBcNeESY\nnUEDPenCMGQAylYjKhA9OQCDR3y7gm+/LB2t3aq6lyOx4/Qmip3nQafv9W3RKzD/\nMgYHNKpIk/XQP+fxlGP2Vg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "senzemo@senzemo.iam.gserviceaccount.com",
+  "client_id": "105629833472776437605",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/senzemo%40senzemo.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
