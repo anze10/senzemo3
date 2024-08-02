@@ -15,7 +15,7 @@ export async function create_spreatsheet() {
   const tokenInfo = await client.getTokenInfo(session?.user.token!);
   console.log(tokenInfo);
 
-  const service = google.sheets({ version: "v4", auth: client });
+  const service = google.sheets({ version: "v4", auth: client as any });
   const resource = {
     properties: {
       title: "New Spreadshit",
