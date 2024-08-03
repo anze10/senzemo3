@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import {
     Checkbox,
     Button,
@@ -7,16 +8,31 @@ import {
     FormControl,
     MenuItem,
     Select,
-    Box,
 } from "@mui/material";
-import { useState } from 'react';
+import { use, useState } from 'react';
+import React from 'react';
+import { useSensor } from 'src/app/components/Contexts';
 
 export default function Component() {
-    const [deviceType, setDeviceType] = useState('');
-    const [dataRate, setDataRate] = useState('');
-    const [frequencyRegion, setFrequencyRegion] = useState('');
-    const [hybridEnable, setHybridEnable] = useState('');
-    const [hybridMask, setHybridMask] = useState('');
+    const [sensorData, setSensorData] = useSensor();
+
+    const [deviceType, setDeviceType] = useState(sensorData.deviceType);
+    const [dataRate, setDataRate] = useState(Number(sensorData.dataRateOptions[0]));
+    const [frequencyRegion, setFrequencyRegion] = useState(sensorData.frequencyRegion);
+    const [hybridEnable, setHybridEnable] = useState<string[]>(sensorData.hybridEnable ?? []);;
+    const [hybridMask, setHybridMask] = useState<string[]>([]);
+
+    const updateSensorData = () => {
+        setSensorData({
+            ...sensorData,
+            deviceType,
+            dataRate,
+            frequencyRegion,
+            hybridEnable,
+            hybridMask,
+            status: 2,
+        });
+    };
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-4">
@@ -33,8 +49,9 @@ export default function Component() {
                                 onChange={(e) => setDeviceType(e.target.value)}
                                 label="CHOOSE DEVICE TYPE"
                             >
-                                <MenuItem value="smc">SMC</MenuItem>
-                                <MenuItem value="ssm">SSM</MenuItem>
+                                {sensorData.deviceTypeOptions.map((option) => (
+                                    <MenuItem key={option} value={option}>{option}</MenuItem>
+                                ))}
                             </Select>
                         </FormControl>
                     </div>
@@ -54,11 +71,12 @@ export default function Component() {
                             <Select
                                 id="data-rate"
                                 value={dataRate}
-                                onChange={(e) => setDataRate(e.target.value)}
+                                onChange={(e) => setDataRate(e.target.value as number)}
                                 label="DATA RATE"
                             >
-                                <MenuItem value="rate1">Rate 1</MenuItem>
-                                <MenuItem value="rate2">Rate 2</MenuItem>
+                                {sensorData.dataRateOptions.map((option) => (
+                                    <MenuItem key={option} value={option}>{option}</MenuItem>
+                                ))}
                             </Select>
                         </FormControl>
                     </div>
@@ -83,11 +101,12 @@ export default function Component() {
                             <Select
                                 id="hybrid-enable"
                                 value={hybridEnable}
-                                onChange={(e) => setHybridEnable(e.target.value)}
+                                onChange={(e) => setHybridEnable(e.target.value as string[])}
                                 label="HYBRID ENABLE + AS923 OFFSET + MASK0-1"
                             >
-                                <MenuItem value="enable1">Enable 1</MenuItem>
-                                <MenuItem value="enable2">Enable 2</MenuItem>
+                                {sensorData.hybridEnable.map((option) => (
+                                    <MenuItem key={option} value={option}>{option}</MenuItem>
+                                ))}
                             </Select>
                         </FormControl>
                     </div>
@@ -97,7 +116,7 @@ export default function Component() {
                             <Select
                                 id="hybrid-mask"
                                 value={hybridMask}
-                                onChange={(e) => setHybridMask(e.target.value)}
+                                onChange={(e) => setHybridMask(e.target.value as string[])}
                                 label="HYBRID MASK 2-5"
                             >
                                 <MenuItem value="mask1">Mask 1</MenuItem>
@@ -142,7 +161,7 @@ export default function Component() {
                         <Input id="serial-number" placeholder="(ENTER VALUE)" fullWidth />
                     </div>
                     <div className="col-span-4 flex justify-center mt-4">
-                        <Button>START SCAN</Button>
+                        <Button onClick={updateSensorData}>START SCAN</Button>
                     </div>
                 </div>
             </div>
