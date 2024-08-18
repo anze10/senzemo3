@@ -17,9 +17,12 @@ export const {
           access_type: "offline",
           response_type: "code",
           scope: [
+
             "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive",
             "https://www.googleapis.com/auth/userinfo.email",
             "https://www.googleapis.com/auth/userinfo.profile",
+            "openid",
             "openid",
             "profile",
             "email",

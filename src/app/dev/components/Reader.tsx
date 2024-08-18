@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Checkbox,
   Button,
@@ -8,147 +8,137 @@ import {
   FormControl,
   MenuItem,
   Select,
+  Box,
 } from "@mui/material";
 import handleClick from "./HandleClick";
 import parseJsonString from "./Parser";
-import { GoogleSpreadsheet } from "google-spreadsheet";
-import { JWT } from "google-auth-library";
-import { env } from "~/env";
 import { signOut, useSession } from "next-auth/react";
 import { create_spreatsheet } from "~/server/actions";
-//import PersonIcon from '@mui/icons-material/Person'; // Adjust the path to the actual location of the user icon image
+import { createFolderAndSpreadsheet } from "~/server/create_foldet";
 
-let sessionCounter = 1;
+
+interface Sensor {
+  deviceType: string;
+  count: string;
+  deviceEui: string;
+  status: number;
+  appEui: string;
+  appKey: string;
+  sendPeriod: string;
+  ack: string;
+  movThr: string;
+  adcEnable: boolean;
+  adcDelay: string;
+  temperature: string;
+  humidity: string;
+  deviceTypeOptions: string[];
+  dataRateOptions: string[];
+  frequencyRegionOptions: string;
+  hybridEnableOptions: string[];
+  hybridMaskOptions: number;
+}
+
 
 const SerialPortComponent: React.FC = () => {
   const [orderName, setOrderName] = useState<string>("");
-  const [deviceType, setDeviceType] = useState<string>("");
-  const [count, setCount] = useState<string>("");
-  const [user, setUser] = useState<string>("John Doe"); // Placeholder for the logged-in user's name
-  const [deviceEui, setDeviceEui] = useState<string>("");
-  const [status, setStatus] = useState<number>(0);
-  const [appEui, setAppEui] = useState<string>("");
-  const [appKey, setAppKey] = useState<string>("");
-  const [sendPeriod, setSendPeriod] = useState<string>("");
-  const [ack, setAck] = useState<string>("");
-  const [movThr, setMovThr] = useState<string>("");
-  const [adcEnable, setAdcEnable] = useState<boolean>(false);
-  const [adcDelay, setAdcDelay] = useState<string>("");
+  const [user, setUser] = useState<string>("John Doe");
   const [companyName, setCompanyName] = useState<string>("");
-  const [temperature, setTemperature] = useState<string>("");
-  const [humidity, setHumidity] = useState<string>("");
-  const [deviceTypeOptions, setDeviceTypeOptions] = useState<string[]>([]);
-  const [dataRateOptions, setDataRateOptions] = useState<string[]>([]);
-  const [frequencyRegionOptions, setFrequencyRegionOptions] =
-    useState<string>("");
-  const [hybridEnableOptions, setHybridEnableOptions] = useState<string[]>([]);
-  const [hybridMaskOptions, setHybridMaskOptions] = useState<number>(0);
-  const [showAdditionalDetails, setShowAdditionalDetails] =
-    useState<boolean>(false);
+  const [showAdditionalDetails, setShowAdditionalDetails] = useState<boolean>(false);
+  const [seznzor, setSensor] = useState<Sensor>({
+    deviceType: "",
+    count: "",
+    deviceEui: "",
+    status: 0,
+    appEui: "",
+    appKey: "",
+    sendPeriod: "",
+    ack: "",
+    movThr: "",
+    adcEnable: false,
+    adcDelay: "",
+    temperature: "",
+    humidity: "",
+    deviceTypeOptions: [],
+    dataRateOptions: [],
+    frequencyRegionOptions: "",
+    hybridEnableOptions: [],
+    hybridMaskOptions: 0,
+  });
+  const [sensorList, setSensorList] = useState<Sensor[]>([]);
 
-  const handleDataReceived = (data: string) => {
+  const addSensor = useCallback(() => {
+    const newSensor: Sensor = {
+      deviceType: "",
+      count: "",
+      deviceEui: "",
+      status: 0,
+      appEui: "",
+      appKey: "",
+      sendPeriod: "",
+      ack: "",
+      movThr: "",
+      adcEnable: false,
+      adcDelay: "",
+      temperature: "",
+      humidity: "",
+      deviceTypeOptions: [],
+      dataRateOptions: [],
+      frequencyRegionOptions: "",
+      hybridEnableOptions: [],
+      hybridMaskOptions: 0,
+    };
+    setSensorList((prev) => [...prev, newSensor]);
+  }, []);
+
+
+  const handleDataReceived = useCallback((data: string) => {
     const parsedData = parseJsonString(data);
     console.log(parsedData);
     console.log(parsedData.lora.freq_reg);
 
-    setDeviceType(parsedData.deviceType || "Senstic");
-    setDeviceEui(parsedData.dev_eui || "");
-    setStatus(
-      parsedData.device?.status !== undefined
-        ? parseInt(parsedData.device.status, 10)
-        : 10,
-    );
-    setAppEui(parsedData.join_eui || "");
-    setAppKey(parsedData.app_key || "");
-    setSendPeriod(parsedData.lora.send_period || "");
-    setAck(parsedData.lora.ack || "");
-    setMovThr(parsedData.device.mov_thr || "");
-    setAdcEnable(parsedData.adcEnable || false);
-    setAdcDelay(parsedData.device.adc_delay || "");
-    setTemperature(parsedData.sensors.temp || "");
-    setHumidity(parsedData.sensors.hum || "");
-    setDeviceTypeOptions(parsedData.deviceTypeOptions || []);
-    setDataRateOptions(parsedData.dataRateOptions || []);
-    setFrequencyRegionOptions(parsedData.lora.freq_reg || "");
-    setHybridEnableOptions(parsedData.hybridEnableOptions || []);
-    setHybridMaskOptions(
-      parsedData.lora.mask2_5 !== undefined ? parsedData.lora.mask2_5 : 0,
-    );
-  };
+    setSensor((prevState) => ({
+      ...prevState,
+      deviceType: parsedData.deviceType || "Senstic",
+      deviceEui: parsedData.dev_eui || "",
+      status: parsedData.device?.status !== undefined ? parseInt(parsedData.device.status, 10) : 10,
+      appEui: parsedData.join_eui || "",
+      appKey: parsedData.app_key || "",
+      sendPeriod: parsedData.lora.send_period || "",
+      ack: parsedData.lora.ack || "",
+      movThr: parsedData.device.mov_thr || "",
+      adcEnable: parsedData.adcEnable || false,
+      adcDelay: parsedData.device.adc_delay || "",
+      temperature: parsedData.sensors.temp || "",
+      humidity: parsedData.sensors.hum || "",
+      deviceTypeOptions: parsedData.deviceTypeOptions || [],
+      dataRateOptions: parsedData.dataRateOptions || [],
+      frequencyRegionOptions: parsedData.lora.freq_reg || "",
+      hybridEnableOptions: parsedData.hybridEnableOptions || [],
+      hybridMaskOptions: parsedData.lora.mask2_5 !== undefined ? parsedData.lora.mask2_5 : 0,
+    }));
+  }, []);
 
-  useEffect(() => {
-    console.log("useEffect", status);
-  }, [status]);
-
-  const handleButtonClick = () => {
+  const handleButtonClick = useCallback(() => {
     handleClick(handleDataReceived);
-  };
+  }, [handleDataReceived]);
 
-  const getStatusColor = (statu: number) => {
-    if (statu === 0) {
-      return "green";
-    } else if (statu === 1 || statu === 2) {
-      return "yellow";
-    } else if (statu > 2) {
-      return "red";
-    } else {
-      return "bg-purple-200";
+  const getStatusColor = useCallback((status: number) => {
+    switch (status) {
+      case 0: return "green";
+      case 1:
+      case 2: return "yellow";
+      case 3:
+      default: return "red";
     }
-  };
+  }, []);
 
-  const generateUniqueId = (product: string, counter: number) => {
+  const generateUniqueId = useCallback((product: string, counter: number) => {
     return `${product}-${counter.toString().padStart(3, "0")}`;
-  };
-
-  const handleAccept = async () => {};
-
-  const createSpreadsheet = (
-    id: string,
-    deviceEui: string,
-    joinEui: string,
-    appKey: string,
-  ) => {
-    const spreadsheetBody = {
-      properties: {
-        title: `Session ${sessionCounter}`,
-      },
-      sheets: [
-        {
-          properties: {
-            title: "Sheet1",
-          },
-          data: [
-            {
-              rowData: [
-                {
-                  values: [
-                    { userEnteredValue: { stringValue: "ID" } },
-                    { userEnteredValue: { stringValue: "Device EUI" } },
-                    { userEnteredValue: { stringValue: "Join EUI" } },
-                    { userEnteredValue: { stringValue: "App Key" } },
-                  ],
-                },
-                {
-                  values: [
-                    { userEnteredValue: { stringValue: id } },
-                    { userEnteredValue: { stringValue: deviceEui } },
-                    { userEnteredValue: { stringValue: joinEui } },
-                    { userEnteredValue: { stringValue: appKey } },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    };
-  };
-
-  const handleFinish = () => {};
+  }, []);
 
   return (
-    <div style={{ fontFamily: "Montserrat, sans-serif", width: "100%" }}>
-      <div
+    <Box style={{ fontFamily: "Montserrat, sans-serif", width: "100%" }}>
+      <Box
         style={{
           display: "flex",
           justifyContent: "space-between",
@@ -172,7 +162,7 @@ const SerialPortComponent: React.FC = () => {
         <div style={{ display: "flex", alignItems: "center" }}>
           <span>{user}</span>
         </div>
-      </div>
+      </Box>
       <div className="px-6 py-8 md:px-8 md:py-12">
         <h1 className="mb-8 text-center text-3xl font-bold">SENZEMO</h1>
         <div
@@ -182,7 +172,7 @@ const SerialPortComponent: React.FC = () => {
             gap: "0.5rem",
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: getStatusColor(status),
+            backgroundColor: getStatusColor(seznzor.status),
             padding: "10px",
             borderRadius: "8px",
             marginBottom: "20px",
@@ -199,8 +189,8 @@ const SerialPortComponent: React.FC = () => {
             <InputLabel htmlFor="device-eui">Device EUI</InputLabel>
             <Input
               id="device-eui"
-              value={deviceEui}
-              onChange={(e) => setDeviceEui(e.target.value)}
+              value={seznzor.deviceEui}
+              onChange={(e) => setSensor({ ...seznzor, deviceEui: e.target.value })}
               placeholder="Device EUI will be auto-filled from NFC tag"
             />
           </div>
@@ -215,9 +205,9 @@ const SerialPortComponent: React.FC = () => {
             <input
               type="text"
               id="status"
-              value={status}
+              value={seznzor.status}
               style={{
-                backgroundColor: getStatusColor(status),
+                backgroundColor: getStatusColor(seznzor.status),
                 fontSize: "1.5rem",
                 width: "100%",
                 padding: "0.5rem",
@@ -236,9 +226,9 @@ const SerialPortComponent: React.FC = () => {
             <FormControl fullWidth>
               <Select
                 id="frequency-region"
-                value={frequencyRegionOptions}
+                value={seznzor.frequencyRegionOptions}
                 onChange={(e) =>
-                  setFrequencyRegionOptions(e.target.value as string)
+                  setSensor({ ...seznzor, frequencyRegionOptions: e.target.value as string })
                 }
               >
                 <MenuItem value="AS923">AS923</MenuItem>
@@ -257,8 +247,8 @@ const SerialPortComponent: React.FC = () => {
             <InputLabel htmlFor="temperature">Temperature</InputLabel>
             <Input
               id="temperature"
-              value={temperature}
-              onChange={(e) => setTemperature(e.target.value)}
+              value={seznzor.temperature}
+              onChange={(e) => setSensor({ ...seznzor, temperature: e.target.value })}
               placeholder="Temperature"
             />
           </div>
@@ -272,8 +262,8 @@ const SerialPortComponent: React.FC = () => {
             <InputLabel htmlFor="humidity">Humidity</InputLabel>
             <Input
               id="humidity"
-              value={humidity}
-              onChange={(e) => setHumidity(e.target.value)}
+              value={seznzor.humidity}
+              onChange={(e) => setSensor({ ...seznzor, humidity: e.target.value })}
               placeholder="Humidity"
             />
           </div>
@@ -299,32 +289,32 @@ const SerialPortComponent: React.FC = () => {
                 <InputLabel htmlFor="join-eui">Join EUI</InputLabel>
                 <Input
                   id="join-eui"
-                  value={appEui}
-                  onChange={(e) => setAppEui(e.target.value)}
+                  value={seznzor.appEui}
+                  onChange={(e) => setSensor({ ...seznzor, appEui: e.target.value })}
                 />
               </div>
               <div>
                 <InputLabel htmlFor="app-key">App Key</InputLabel>
                 <Input
                   id="app-key"
-                  value={appKey}
-                  onChange={(e) => setAppKey(e.target.value)}
+                  value={seznzor.appKey}
+                  onChange={(e) => setSensor({ ...seznzor, appKey: e.target.value })}
                 />
               </div>
               <div>
                 <InputLabel htmlFor="send-period">Send Period</InputLabel>
                 <Input
                   id="send-period"
-                  value={sendPeriod}
-                  onChange={(e) => setSendPeriod(e.target.value)}
+                  value={seznzor.sendPeriod}
+                  onChange={(e) => setSensor({ ...seznzor, sendPeriod: e.target.value })}
                 />
               </div>
               <div>
                 <InputLabel htmlFor="ack">ACK</InputLabel>
                 <Input
                   id="ack"
-                  value={ack}
-                  onChange={(e) => setAck(e.target.value)}
+                  value={seznzor.ack}
+                  onChange={(e) => setSensor({ ...seznzor, ack: e.target.value })}
                 />
               </div>
             </div>
@@ -333,16 +323,16 @@ const SerialPortComponent: React.FC = () => {
                 <InputLabel htmlFor="mov-thr">MOV THR</InputLabel>
                 <Input
                   id="mov-thr"
-                  value={movThr}
-                  onChange={(e) => setMovThr(e.target.value)}
+                  value={seznzor.movThr}
+                  onChange={(e) => setSensor({ ...seznzor, movThr: e.target.value })}
                 />
               </div>
               <div>
                 <InputLabel htmlFor="adc-delay">ADC Delay</InputLabel>
                 <Input
                   id="adc-delay"
-                  value={adcDelay}
-                  onChange={(e) => setAdcDelay(e.target.value)}
+                  value={seznzor.adcDelay}
+                  onChange={(e) => setSensor({ ...seznzor, adcDelay: e.target.value })}
                 />
               </div>
             </div>
@@ -357,8 +347,8 @@ const SerialPortComponent: React.FC = () => {
               </div>
               <div style={{ display: "flex", alignItems: "center" }}>
                 <Checkbox
-                  checked={adcEnable}
-                  onChange={(e) => setAdcEnable(e.target.checked)}
+                  checked={seznzor.adcEnable}
+                  onChange={(e) => setSensor({ ...seznzor, adcEnable: e.target.checked })}
                 />
                 <span>ADC Enable</span>
               </div>
@@ -368,7 +358,7 @@ const SerialPortComponent: React.FC = () => {
         <div className="mt-4 flex justify-between">
           <Button
             onClick={async () => {
-              await create_spreatsheet();
+              await addSensor();
             }}
             style={{
               backgroundColor: "#4CAF50",
@@ -380,7 +370,10 @@ const SerialPortComponent: React.FC = () => {
           </Button>
           <Button onClick={async () => await signOut()}>Odjavi se</Button>
           <Button
-            onClick={handleFinish}
+            onClick={async () => {
+              await createFolderAndSpreadsheet()
+            }
+            }
             style={{
               backgroundColor: "#f44336",
               color: "white",
@@ -391,7 +384,7 @@ const SerialPortComponent: React.FC = () => {
           </Button>
         </div>
       </div>
-    </div>
+    </Box>
   );
 };
 
