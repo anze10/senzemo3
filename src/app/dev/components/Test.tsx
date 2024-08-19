@@ -1,5 +1,5 @@
 import { auth } from "src/server/auth";
-import Reader, { NewSensorSetter } from "./Reader";
+import Reader,  from "./Reader";
 import { redirect } from "next/navigation";
 
 const HomePage = async () => {
@@ -9,7 +9,7 @@ const HomePage = async () => {
 
   return (
     <div className="m-4 flex flex-col items-center">
-      <NewSensorSetter />
+
       <Reader></Reader>
     </div>
   );

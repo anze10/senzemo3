@@ -8,7 +8,7 @@ import {
   useSensorStore,
 } from "../dev/components/SensorStore";
 
-export function NewSensorSetter() {
+export default function NewSensorSetter() {
   const [sensorNumber, setSensorNumber] = useState(0);
 
   const current_sensor = useSensorStore((state) => state.sensors[sensorNumber]);
