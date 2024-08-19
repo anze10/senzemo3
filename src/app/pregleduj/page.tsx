@@ -4,7 +4,7 @@ import { useState } from "react";
 import handleClick from "../dev/components/HandleClick";
 import { useSensorStore } from "../dev/components/SensorStore";
 
-export function NewSensorSetter() {
+export default function NewSensorSetter() {
   const [sensorNumber, setSensorNumber] = useState(0);
   const sensor_data = useSensorStore(
     (state) => state.sensor_data[sensorNumber],
