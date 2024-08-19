@@ -16,7 +16,7 @@ import { signOut, useSession } from "next-auth/react";
 import { create_spreatsheet } from "~/server/actions";
 import { PresantateData } from "~/server/PresantateData";
 import { createFolderAndSpreadsheet } from "~/server/create_foldet";
-
+import { useSensorStore } from "./SensorStore";
 
 interface Sensor {
   deviceType: string;
@@ -39,12 +39,30 @@ interface Sensor {
   hybridMaskOptions: number;
 }
 
+export function NewSensorSetter() {
+  const sensor_data = useSensorStore((state) => state.sensor_data);
+  const set_sensors_from_json = useSensorStore((state) => state.set_from_json);
+
+  return (
+    <div>
+      <button
+        onClick={async () => {
+          await handleClick(set_sensors_from_json);
+        }}
+      >
+        Set sensors
+      </button>
+      <pre>{JSON.stringify(sensor_data, null, 2)}</pre>
+    </div>
+  );
+}
 
 const SerialPortComponent: React.FC = () => {
   const [orderName, setOrderName] = useState<string>("");
   const [user, setUser] = useState<string>("John Doe");
   const [companyName, setCompanyName] = useState<string>("");
-  const [showAdditionalDetails, setShowAdditionalDetails] = useState<boolean>(false);
+  const [showAdditionalDetails, setShowAdditionalDetails] =
+    useState<boolean>(false);
   const [seznzor, setSensor] = useState<Sensor>({
     deviceType: "",
     count: "",
@@ -91,17 +109,18 @@ const SerialPortComponent: React.FC = () => {
     setSensorList((prev) => [...prev, newSensor]);
   }, []);
 
-
   const handleDataReceived = useCallback((data: string) => {
     const parsedData = parseJsonString(data);
     console.log(parsedData);
-
 
     setSensor((prevState) => ({
       ...prevState,
       deviceType: parsedData.deviceType || "Senstic",
       deviceEui: parsedData.dev_eui || "",
-      status: parsedData.device?.status !== undefined ? parseInt(parsedData.device.status, 10) : 10,
+      status:
+        parsedData.device?.status !== undefined
+          ? parseInt(parsedData.device.status, 10)
+          : 10,
       appEui: parsedData.join_eui || "",
       appKey: parsedData.app_key || "",
       sendPeriod: parsedData.lora.send_period || "",
@@ -115,7 +134,8 @@ const SerialPortComponent: React.FC = () => {
       dataRateOptions: parsedData.dataRateOptions || [],
       frequencyRegionOptions: parsedData.lora.freq_reg || "",
       hybridEnableOptions: parsedData.hybridEnableOptions || [],
-      hybridMaskOptions: parsedData.lora.mask2_5 !== undefined ? parsedData.lora.mask2_5 : 0,
+      hybridMaskOptions:
+        parsedData.lora.mask2_5 !== undefined ? parsedData.lora.mask2_5 : 0,
     }));
   }, []);
 
@@ -125,15 +145,16 @@ const SerialPortComponent: React.FC = () => {
 
   const getStatusColor = useCallback((status: number) => {
     switch (status) {
-      case 0: return "green";
+      case 0:
+        return "green";
       case 1:
-      case 2: return "yellow";
+      case 2:
+        return "yellow";
       case 3:
-      default: return "red";
+      default:
+        return "red";
     }
   }, []);
-
-
 
   return (
     <Box style={{ fontFamily: "Montserrat, sans-serif", width: "100%" }}>
@@ -189,7 +210,9 @@ const SerialPortComponent: React.FC = () => {
             <Input
               id="device-eui"
               value={seznzor.deviceEui}
-              onChange={(e) => setSensor({ ...seznzor, deviceEui: e.target.value })}
+              onChange={(e) =>
+                setSensor({ ...seznzor, deviceEui: e.target.value })
+              }
               placeholder="Device EUI will be auto-filled from NFC tag"
             />
           </div>
@@ -227,7 +250,10 @@ const SerialPortComponent: React.FC = () => {
                 id="frequency-region"
                 value={seznzor.frequencyRegionOptions}
                 onChange={(e) =>
-                  setSensor({ ...seznzor, frequencyRegionOptions: e.target.value as string })
+                  setSensor({
+                    ...seznzor,
+                    frequencyRegionOptions: e.target.value as string,
+                  })
                 }
               >
                 <MenuItem value="AS923">AS923</MenuItem>
@@ -247,7 +273,9 @@ const SerialPortComponent: React.FC = () => {
             <Input
               id="temperature"
               value={seznzor.temperature}
-              onChange={(e) => setSensor({ ...seznzor, temperature: e.target.value })}
+              onChange={(e) =>
+                setSensor({ ...seznzor, temperature: e.target.value })
+              }
               placeholder="Temperature"
             />
           </div>
@@ -262,7 +290,9 @@ const SerialPortComponent: React.FC = () => {
             <Input
               id="humidity"
               value={seznzor.humidity}
-              onChange={(e) => setSensor({ ...seznzor, humidity: e.target.value })}
+              onChange={(e) =>
+                setSensor({ ...seznzor, humidity: e.target.value })
+              }
               placeholder="Humidity"
             />
           </div>
@@ -289,7 +319,9 @@ const SerialPortComponent: React.FC = () => {
                 <Input
                   id="join-eui"
                   value={seznzor.appEui}
-                  onChange={(e) => setSensor({ ...seznzor, appEui: e.target.value })}
+                  onChange={(e) =>
+                    setSensor({ ...seznzor, appEui: e.target.value })
+                  }
                 />
               </div>
               <div>
@@ -297,7 +329,9 @@ const SerialPortComponent: React.FC = () => {
                 <Input
                   id="app-key"
                   value={seznzor.appKey}
-                  onChange={(e) => setSensor({ ...seznzor, appKey: e.target.value })}
+                  onChange={(e) =>
+                    setSensor({ ...seznzor, appKey: e.target.value })
+                  }
                 />
               </div>
               <div>
@@ -305,7 +339,9 @@ const SerialPortComponent: React.FC = () => {
                 <Input
                   id="send-period"
                   value={seznzor.sendPeriod}
-                  onChange={(e) => setSensor({ ...seznzor, sendPeriod: e.target.value })}
+                  onChange={(e) =>
+                    setSensor({ ...seznzor, sendPeriod: e.target.value })
+                  }
                 />
               </div>
               <div>
@@ -313,7 +349,9 @@ const SerialPortComponent: React.FC = () => {
                 <Input
                   id="ack"
                   value={seznzor.ack}
-                  onChange={(e) => setSensor({ ...seznzor, ack: e.target.value })}
+                  onChange={(e) =>
+                    setSensor({ ...seznzor, ack: e.target.value })
+                  }
                 />
               </div>
             </div>
@@ -323,7 +361,9 @@ const SerialPortComponent: React.FC = () => {
                 <Input
                   id="mov-thr"
                   value={seznzor.movThr}
-                  onChange={(e) => setSensor({ ...seznzor, movThr: e.target.value })}
+                  onChange={(e) =>
+                    setSensor({ ...seznzor, movThr: e.target.value })
+                  }
                 />
               </div>
               <div>
@@ -331,7 +371,9 @@ const SerialPortComponent: React.FC = () => {
                 <Input
                   id="adc-delay"
                   value={seznzor.adcDelay}
-                  onChange={(e) => setSensor({ ...seznzor, adcDelay: e.target.value })}
+                  onChange={(e) =>
+                    setSensor({ ...seznzor, adcDelay: e.target.value })
+                  }
                 />
               </div>
             </div>
@@ -347,7 +389,9 @@ const SerialPortComponent: React.FC = () => {
               <div style={{ display: "flex", alignItems: "center" }}>
                 <Checkbox
                   checked={seznzor.adcEnable}
-                  onChange={(e) => setSensor({ ...seznzor, adcEnable: e.target.checked })}
+                  onChange={(e) =>
+                    setSensor({ ...seznzor, adcEnable: e.target.checked })
+                  }
                 />
                 <span>ADC Enable</span>
               </div>
@@ -370,9 +414,8 @@ const SerialPortComponent: React.FC = () => {
           <Button onClick={async () => await signOut()}>Odjavi se</Button>
           <Button
             onClick={async () => {
-              await createFolderAndSpreadsheet()
-            }
-            }
+              await createFolderAndSpreadsheet();
+            }}
             style={{
               backgroundColor: "#f44336",
               color: "white",
