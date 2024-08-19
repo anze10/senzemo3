@@ -1,5 +1,6 @@
-import { create } from "zustand";
+import { create, StateCreator } from "zustand";
 import { produce } from "immer";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 export type SensorData = {
   sensor_name: SensorModel;
@@ -57,14 +58,18 @@ export type RatedSensorData = {
 
 interface SensorState {
   sensors: RatedSensorData[];
-  initialize_sensor_data: (data: string, sensor_number: number) => void;
+  initialize_sensor_data: (data: string) => void;
   set_sensor_status: (sensor_number: number, okay: boolean) => void;
   change_sensor_data: (sensor_number: number, new_data: SensorData) => void;
 }
 
-export const useSensorStore = create<SensorState>((set) => ({
+/* 
+StateCreator<SensorState, [], [["zustand/persist", SensorState]]>' is not assignable to parameter of type 'StateCreator<SensorState, [], []>'.
+*/
+
+const sensor_callback: StateCreator<SensorState, [], []> = (set) => ({
   sensors: [],
-  initialize_sensor_data: (data, sensor_number) => {
+  initialize_sensor_data: (data) => {
     const parsed_data = JSON.parse(data) as SensorJSON;
     const sensor_name = parsed_data.family_id as SensorModel;
 
@@ -78,9 +83,9 @@ export const useSensorStore = create<SensorState>((set) => ({
 
     set(
       produce((state: SensorState) => {
-        state.sensors[sensor_number] = {
+        state.sensors.push({
           data: new_data,
-        };
+        });
       }),
     );
   },
@@ -104,7 +109,14 @@ export const useSensorStore = create<SensorState>((set) => ({
       }),
     );
   },
-}));
+});
+
+export const useSensorStore = create<SensorState>()(
+  persist(sensor_callback, {
+    name: "sensor-store",
+    storage: createJSONStorage(() => localStorage),
+  }),
+);
 
 enum SensorModel {
   SMC30,

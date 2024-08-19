@@ -7,11 +7,13 @@ import {
   type SensorKeyValuePair,
   useSensorStore,
 } from "../dev/components/SensorStore";
+import { Typography } from "@mui/material";
 
 export default function NewSensorSetter() {
   const [sensorNumber, setSensorNumber] = useState(0);
 
   const current_sensor = useSensorStore((state) => state.sensors[sensorNumber]);
+  const all_sensors = useSensorStore((state) => state.sensors);
   const initialize_sensor_data = useSensorStore(
     (state) => state.initialize_sensor_data,
   );
@@ -22,6 +24,9 @@ export default function NewSensorSetter() {
     void handleClick((data) => initialize_sensor_data(data, sensorNumber));
   }, [initialize_sensor_data, sensorNumber]);
 
+  useEffect(()=> {
+    console.log(all_sensors)
+  },[all_sensors])
   return (
     <div>
       <button onClick={() => setSensorNumber(sensorNumber - 1)}>
@@ -45,7 +50,11 @@ export default function NewSensorSetter() {
         Sensor {sensorNumber}: NOT OKAY
       </button>
       <a href="/konec">Zaključi</a>
-      {/* <pre>{JSON.stringify(current_sensor, null, 2)}</pre> */}
+      <Typography variant="h1">Trenutni sensor</Typography>
+      <pre>{JSON.stringify(current_sensor, null, 2)}</pre>
+
+      <Typography variant="h1">Vsi sensorji</Typography>
+      <pre>{JSON.stringify(all_sensors, null, 2)}</pre>
       <form>
         <CommonDataInput current_sensor={current_sensor?.data} />
         {current_sensor?.data.custom_data?.map((some_property) => (

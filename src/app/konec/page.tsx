@@ -3,7 +3,7 @@
 import { useSensorStore } from "../dev/components/SensorStore";
 
 export default function KonecPage() {
-  const sensor_data = useSensorStore();
+  const sensor_data = useSensorStore((state) => state.sensors);
 
   return (
     <div>
