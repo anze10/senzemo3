@@ -23,24 +23,45 @@ type SensorName =
     | "KOU20"
     | "SPU10";
 
-type CommonSensorData = {
-    // deviceType: string; // sensor_name
-    dataRate: string;
-    deviceEui: string;
-    status: number;
-    family_id: number; //po family id se najde  SensorName
-    appEui: string;
-    appKey: string;
-    sendPeriod: string;
-    ack: string;
-    movThr: string;
-    adcEnable: boolean;
-    adcDelay: string;
+export type CommonSensorData = {
+    app_key: string;
+    dev_eui: string;
+    family_id: number;
+    join_eui: string;
+    product_id: number;
+    device: {
+        adc_delay: number;
+        adc_enable: boolean;
+        firmware_version: number;
+        hardware_version: number;
+        mowment_threshold: number;
+        status: number;
+
+    };
+    lora: {
+        ack: number;
+        data_rate: number | "error";
+        freq_reg: string;
+        hybrid_mask: number;
+        mask2_5: number;
+        send_period: number;
+
+    };
+
+
+
+
+    //po family id se najde  SensorName
+
+
+
+
+
     deviceTypeOptions: string[];
     dataRateOptions: string[];
-    frequencyRegionOptions: string;
+
     hybridEnableOptions: string[];
-    hybridMaskOptions: number;
+
 };
 
 type ParsedData<T = {}> = CommonSensorData & T;
@@ -50,19 +71,21 @@ const PresantateData = (jsonString: string) => {
         const parsedData = parseJsonString(data) as ParsedData;
 
         const common_data: CommonSensorData = {
-            dataRate: parsedData.lora?.data_rate || "error",
+
+            data_rate: parsedData.lora?.data_rate || "error",
+
             deviceEui: parsedData.dev_eui || "error",
             status:
                 parsedData.device?.status !== undefined
-                    ? parseInt(parsedData.device.status, 10)
+                    ? (parsedData.device.status, 10)
                     : 10,
-            family_id: parsedData.device?.family_id || 0,
+            family_id: parsedData.family_id || 0,
             appEui: parsedData.join_eui || "error",
             appKey: parsedData.app_key || "error",
             sendPeriod: parsedData.lora?.send_period || "error",
             ack: parsedData.lora?.ack || "error",
-            movThr: parsedData.device?.mov_thr || "error",
-            adcEnable: parsedData.adcEnable || false,
+            movThr: parsedData.device?.mowment_threshold || "error",
+            adcEnable: parsedData.device.adc_enable || false,
             adcDelay: parsedData.device?.adc_delay || "error",
             deviceTypeOptions: parsedData.deviceTypeOptions || [],
             dataRateOptions: parsedData.dataRateOptions || [],
