@@ -94,7 +94,7 @@ const SerialPortComponent: React.FC = () => {
   const handleDataReceived = useCallback((data: string) => {
     const parsedData = parseJsonString(data);
     console.log(parsedData);
-    console.log(parsedData.lora.freq_reg);
+
 
     setSensor((prevState) => ({
       ...prevState,
@@ -132,9 +132,7 @@ const SerialPortComponent: React.FC = () => {
     }
   }, []);
 
-  const generateUniqueId = useCallback((product: string, counter: number) => {
-    return `${product}-${counter.toString().padStart(3, "0")}`;
-  }, []);
+
 
   return (
     <Box style={{ fontFamily: "Montserrat, sans-serif", width: "100%" }}>

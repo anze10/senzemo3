@@ -1,6 +1,3 @@
-eui 
-device type
-frekvenca
 ____________________________________
 
 vecja tipka accapt == enter
