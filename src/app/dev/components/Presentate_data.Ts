@@ -30,82 +30,70 @@ export type CommonSensorData = {
     join_eui: string;
     product_id: number;
     device: {
-        adc_delay: number;
+        adc_delay: number | "error";
         adc_enable: boolean;
-        firmware_version: number;
-        hardware_version: number;
-        mowment_threshold: number;
-        status: number;
+        firmware_version: number | "error";
+        hardware_version: number | "error";
+        mowment_threshold: number | "error";
+        status: number | "error";
 
     };
     lora: {
-        ack: number;
+        ack: number | "error";
         data_rate: number | "error";
-        freq_reg: string;
-        hybrid_mask: number;
-        mask2_5: number;
-        send_period: number;
+        freq_reg: string | "error";
+        hybrid_mask: string[] | "error";
+        mask2_5: number | "error";
+        send_period: number | "error";
 
     };
-
-
-
-
-    //po family id se najde  SensorName
-
-
-
-
-
-    deviceTypeOptions: string[];
-    dataRateOptions: string[];
-
-    hybridEnableOptions: string[];
 
 };
 
 type ParsedData<T = {}> = CommonSensorData & T;
+const initializeSensorData = (data: string): SensorData => {
+    const parsedData = parseJsonString(data) as ParsedData;
 
-const PresantateData = (jsonString: string) => {
-    const initializeSensorData = (data: string): SensorData => {
-        const parsedData = parseJsonString(data) as ParsedData;
+    const common_data: CommonSensorData = {
+        app_key: parsedData.app_key || "error",
+        dev_eui: parsedData.dev_eui || "error",
+        family_id: parsedData.family_id || 0,
+        join_eui: parsedData.join_eui || "error",
+        product_id: parsedData.product_id || 0,
 
-        const common_data: CommonSensorData = {
+        device: {
+            adc_delay: parsedData.device?.adc_delay || "error",
+            adc_enable: parsedData.device.adc_enable || false,
+            firmware_version: parsedData.device?.firmware_version || "error",
+            hardware_version: parsedData.device?.hardware_version || "error",
+            mowment_threshold: parsedData.device?.mowment_threshold || "error",
+            status: parsedData.device?.status !== undefined
+                ? (parsedData.device.status, 10)
+                : 10,
 
-            data_rate: parsedData.lora?.data_rate || "error",
-
-            deviceEui: parsedData.dev_eui || "error",
-            status:
-                parsedData.device?.status !== undefined
-                    ? (parsedData.device.status, 10)
-                    : 10,
-            family_id: parsedData.family_id || 0,
-            appEui: parsedData.join_eui || "error",
-            appKey: parsedData.app_key || "error",
-            sendPeriod: parsedData.lora?.send_period || "error",
+        },
+        lora: {
             ack: parsedData.lora?.ack || "error",
-            movThr: parsedData.device?.mowment_threshold || "error",
-            adcEnable: parsedData.device.adc_enable || false,
-            adcDelay: parsedData.device?.adc_delay || "error",
-            deviceTypeOptions: parsedData.deviceTypeOptions || [],
-            dataRateOptions: parsedData.dataRateOptions || [],
-            frequencyRegionOptions: parsedData.lora?.freq_reg || "error",
-            hybridEnableOptions: parsedData.hybridEnableOptions || [],
-            hybridMaskOptions:
-                parsedData.lora?.mask2_5 !== undefined ? parsedData.lora.mask2_5 : 0,
-        };
+            data_rate: parsedData.lora?.data_rate || "error",
+            freq_reg: parsedData.lora?.freq_reg || "error",
+            hybrid_mask: parsedData.lora?.hybrid_mask || "error",
+            mask2_5:
+                parsedData.lora?.mask2_5 !== undefined ? parsedData.lora.mask2_5 : "error",
+            send_period: parsedData.lora?.send_period || "error",
+        },
 
-        const sensor_name = get_sensor_name_from_family_id(common_data.family_id); // lahko undefined
+    };
 
-        const custom_data = sensor_name
-            ? get_custom_data_from_sensor_name(sensor_name, parsedData)
-            : [];
+    const sensor_name = get_sensor_name_from_family_id(common_data.family_id); // lahko undefined
 
-        return {
-            sensor_name,
-            common_data,
-            custom_data,
-        };
+    const custom_data = sensor_name
+        ? get_custom_data_from_sensor_name(sensor_name, parsedData)
+        : [];
+
+    return {
+        sensor_name,
+        common_data,
+        custom_data,
     };
 };
 
