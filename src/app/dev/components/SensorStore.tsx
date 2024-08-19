@@ -1,13 +1,13 @@
 import { create } from "zustand";
 import { produce } from "immer";
 
-type SensorData = {
+export type SensorData = {
   sensor_name: SensorModel;
   common_data: SensorKeyValuePair[];
   custom_data?: SensorKeyValuePair[];
 };
 
-type SensorKeyValuePair = {
+export type SensorKeyValuePair = {
   name: string;
   value: unknown;
 };
@@ -52,17 +52,19 @@ type SensorJSON = Record<string, unknown>;
 
 export type RatedSensorData = {
   data: SensorData;
-  okay: boolean;
+  okay?: boolean;
 };
 
 interface SensorState {
-  sensor_data: RatedSensorData[];
-  set_from_json: (data: string, sensor_number: number, okay: boolean) => void;
+  sensors: RatedSensorData[];
+  initialize_sensor_data: (data: string, sensor_number: number) => void;
+  set_sensor_status: (sensor_number: number, okay: boolean) => void;
+  change_sensor_data: (sensor_number: number, new_data: SensorData) => void;
 }
 
 export const useSensorStore = create<SensorState>((set) => ({
-  sensor_data: [],
-  set_from_json: (data, sensor_number, okay) => {
+  sensors: [],
+  initialize_sensor_data: (data, sensor_number) => {
     const parsed_data = JSON.parse(data) as SensorJSON;
     const sensor_name = parsed_data.family_id as SensorModel;
 
@@ -76,10 +78,29 @@ export const useSensorStore = create<SensorState>((set) => ({
 
     set(
       produce((state: SensorState) => {
-        state.sensor_data[sensor_number] = {
+        state.sensors[sensor_number] = {
           data: new_data,
-          okay,
         };
+      }),
+    );
+  },
+  set_sensor_status: (sensor_number, okay) => {
+    set(
+      produce((state: SensorState) => {
+        const this_sensor = state.sensors[sensor_number];
+        if (!this_sensor) return;
+
+        this_sensor.okay = okay;
+      }),
+    );
+  },
+  change_sensor_data: (sensor_number, new_data) => {
+    set(
+      produce((state: SensorState) => {
+        const this_sensor = state.sensors[sensor_number];
+        if (!this_sensor) return;
+
+        this_sensor.data = new_data;
       }),
     );
   },
