@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   Checkbox,
   Button,
@@ -12,11 +12,8 @@ import {
 } from "@mui/material";
 import handleClick from "./HandleClick";
 import parseJsonString from "./Parser";
-import { signOut, useSession } from "next-auth/react";
-import { create_spreatsheet } from "~/server/actions";
-import { PresantateData } from "~/server/PresantateData";
+import { signOut } from "next-auth/react";
 import { createFolderAndSpreadsheet } from "~/server/create_foldet";
-import { useSensorStore } from "./SensorStore";
 
 interface Sensor {
   deviceType: string;
@@ -37,24 +34,6 @@ interface Sensor {
   frequencyRegionOptions: string;
   hybridEnableOptions: string[];
   hybridMaskOptions: number;
-}
-
-export function NewSensorSetter() {
-  const sensor_data = useSensorStore((state) => state.sensor_data);
-  const set_sensors_from_json = useSensorStore((state) => state.set_from_json);
-
-  return (
-    <div>
-      <button
-        onClick={async () => {
-          await handleClick(set_sensors_from_json);
-        }}
-      >
-        Set sensors
-      </button>
-      <pre>{JSON.stringify(sensor_data, null, 2)}</pre>
-    </div>
-  );
 }
 
 const SerialPortComponent: React.FC = () => {
@@ -167,6 +146,7 @@ const SerialPortComponent: React.FC = () => {
           backgroundColor: "#f5f5f5",
         }}
       >
+        <a href="/pregleduj">Pregleduj</a>
         <button
           onClick={handleButtonClick}
           style={{

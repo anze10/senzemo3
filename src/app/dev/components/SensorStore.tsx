@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { produce } from "immer";
 
 type SensorData = {
   sensor_name: SensorModel;
@@ -49,16 +50,22 @@ export const COMMON_PROPERTIES = [
 
 type SensorJSON = Record<string, unknown>;
 
+export type RatedSensorData = {
+  data: SensorData;
+  okay: boolean;
+};
+
 interface SensorState {
-  sensor_data?: SensorData;
-  set_from_json: (data: string) => void;
+  sensor_data: RatedSensorData[];
+  set_from_json: (data: string, sensor_number: number, okay: boolean) => void;
 }
 
 export const useSensorStore = create<SensorState>((set) => ({
-  sensor_data: undefined,
-  set_from_json: (data) => {
+  sensor_data: [],
+  set_from_json: (data, sensor_number, okay) => {
     const parsed_data = JSON.parse(data) as SensorJSON;
     const sensor_name = parsed_data.family_id as SensorModel;
+
     const { common_data, custom_data } = split_common_custom(parsed_data);
 
     const new_data: SensorData = {
@@ -67,9 +74,14 @@ export const useSensorStore = create<SensorState>((set) => ({
       custom_data,
     };
 
-    set((_: unknown) => ({
-      sensor_data: new_data,
-    }));
+    set(
+      produce((state: SensorState) => {
+        state.sensor_data[sensor_number] = {
+          data: new_data,
+          okay,
+        };
+      }),
+    );
   },
 }));
 
