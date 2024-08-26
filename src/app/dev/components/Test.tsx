@@ -1,5 +1,6 @@
 import { auth } from "src/server/auth";
-import Reader,  from "./Reader";
+import
+Reader from "./Reader";
 import { redirect } from "next/navigation";
 
 const HomePage = async () => {
