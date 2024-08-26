@@ -21,12 +21,12 @@ export default function NewSensorSetter() {
 
   useEffect(() => {
     // zamenjaj z funkcijo ki uporabi prejšn socket
-    void handleClick((data) => initialize_sensor_data(data, sensorNumber));
+    void handleClick((data) => initialize_sensor_data(data));
   }, [initialize_sensor_data, sensorNumber]);
 
-  useEffect(()=> {
+  useEffect(() => {
     console.log(all_sensors)
-  },[all_sensors])
+  }, [all_sensors])
   return (
     <div>
       <button onClick={() => setSensorNumber(sensorNumber - 1)}>

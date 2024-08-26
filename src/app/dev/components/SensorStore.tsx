@@ -13,29 +13,6 @@ export type SensorKeyValuePair = {
   value: unknown;
 };
 
-/* export type CommonSensorData = {
-  app_key: string;
-  dev_eui: string;
-  family_id: number;
-  join_eui: string;
-  product_id: number;
-  device: {
-    adc_delay: number;
-    adc_enable: boolean;
-    firmware_version: number;
-    hardware_version: number;
-    mowment_threshold: number;
-    status: number;
-  };
-  lora: {
-    ack: number;
-    data_rate: number;
-    freq_reg: string;
-    hybrid_mask: string[];
-    mask2_5: number;
-    send_period: number;
-  };
-}; */
 
 export const COMMON_PROPERTIES = [
   "app_key",
@@ -47,7 +24,6 @@ export const COMMON_PROPERTIES = [
   "lora",
 ];
 
-// parsed data - common data => custom data
 
 type SensorJSON = Record<string, unknown>;
 
