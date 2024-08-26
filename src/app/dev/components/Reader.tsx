@@ -254,205 +254,301 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
                 borderRadius: "8px",
               }}
             >
-              <InputLabel htmlFor="status">Status</InputLabel>
-              <Input
-                type="text"
-                id="status"
-                {...sensor_form_api.register("status")}
-                style={{
-                  fontSize: "1.5rem",
-                  width: "100%",
-                  padding: "0.5rem",
-                }}
-                disabled
-                defaultValue={current_sensor?.data.common_data[1]?.value}
-              />
-            </Box>
-            <Box
-              style={{
-                border: "1px solid black",
-                padding: "0.5rem",
-                borderRadius: "8px",
-              }}
-            >
-              <InputLabel htmlFor="frequency-region">
-                Frequency Region
-              </InputLabel>
-              <FormControl fullWidth>
-                <Select
-                  id="frequency-region"
-                  {...sensor_form_api.register("frequency-region")}
-                // defaultValue={current_sensor?.data.common_data[2]?.value}
-                >
-                  <MenuItem value="AS923">AS923</MenuItem>
-                  <MenuItem value="EU868">EU868</MenuItem>
-                  <MenuItem value="US915">US915</MenuItem>
-                </Select>
-              </FormControl>
-            </Box>
-            <Box
-              style={{
-                border: "1px solid black",
-                padding: "0.5rem",
-                borderRadius: "8px",
-              }}
-            >
-              <InputLabel htmlFor="temperature">Temperature</InputLabel>
-              <Input
-                id="temperature"
-                {...sensor_form_api.register("temperature")}
-                placeholder="Temperature"
-                defaultValue={current_sensor?.data.common_data[2]?.value}
-              />
-            </Box>
-            <Box
-              style={{
-                border: "1px solid black",
-                padding: "0.5rem",
-                borderRadius: "8px",
-              }}
-            >
-              <InputLabel htmlFor="humidity">Humidity</InputLabel>
-              <Input
-                id="humidity"
-                {...sensor_form_api.register("humidity")}
-                placeholder="Humidity"
-                defaultValue={current_sensor?.data.common_data[2]?.value}
-              />
-            </Box>
-          </Box>
+              {/* preveri črkovanje */}
+              <Controller
+                control={sensor_form_api.control}
+                name="status"
+                defaultValue={get_current_sensor_data("status") as number}
+                render={({ field }) => (
+                  <>
+                    <InputLabel htmlFor="status">Status</InputLabel>
+                    <Input
+                      disabled
+                      style={{
+                        fontSize: "1.5rem",
+                        width: "100%",
+                        padding: "0.5rem",
+                      }}
+                      {...field}
+                    />
+                  </>
+                )}
 
-          <Button
-            onClick={() => setShowAdditionalDetails(!showAdditionalDetails)}
-            style={{
-              backgroundColor: "#008CBA",
-              color: "white",
-              padding: "10px 20px",
-              border: "none",
-              cursor: "pointer",
-              marginTop: "20px",
-            }}
-          >
-            {showAdditionalDetails ? "Show Less" : "Show More"}
-          </Button>
-          {showAdditionalDetails && (
-            <Box className="mt-4">
-              <Box className="grid grid-cols-1 gap-6 md:grid-cols-4">
-                <Box>
-                  <InputLabel htmlFor="join-eui">Join EUI</InputLabel>
-                  <Input
-                    id="join-eui"
-                    {...sensor_form_api.register("join-eui")}
-                    defaultValue={current_sensor?.data.common_data[1]?.value}
-                  />
-                </Box>
-                <Box>
-                  <InputLabel htmlFor="app-key">App Key</InputLabel>
-                  <Input
-                    id="app-key"
-                    {...sensor_form_api.register("app-key")}
-                    defaultValue={current_sensor?.data.common_data[1]?.value}
-                  />
-                </Box>
-                <Box>
-                  <InputLabel htmlFor="send-period">Send Period</InputLabel>
-                  <Input
-                    id="send-period"
-                    {...sensor_form_api.register("send-period")}
-                    defaultValue={current_sensor?.data.common_data[1]?.value}
-                  />
-                </Box>
-                <Box>
-                  <InputLabel htmlFor="ack">ACK</InputLabel>
-                  <Input
-                    id="ack"
-                    {...sensor_form_api.register("ack")}
-                    defaultValue={current_sensor?.data.common_data[1]?.value}
-                  />
-                </Box>
+              />
+              <Box
+                style={{
+                  border: "1px solid black",
+                  padding: "0.5rem",
+                  borderRadius: "8px",
+                }}
+              >
+                {/* ne znam zrihtaht */}
+                <Controller
+                  name="frequency-region"
+                  control={sensor_form_api.control}
+                  render={({ field }) => <Select
+                    {...field}
+                    options={[
+                      { value: "AS923", label: "AS923" },
+                      { value: "EU868", label: "EU868" },
+                      { value: "US915", label: "US915" }
+                    ]}
+                  />}
+                />
+
+
+                {/* <InputLabel htmlFor="frequency-region">
+                  Frequency Region
+                </InputLabel>
+                <FormControl fullWidth>
+                  <Select
+                    id="frequency-region"
+                    {...sensor_form_api.register("frequency-region")}
+                  // defaultValue={current_sensor?.data.common_data[2]?.value}
+                  >
+                    <MenuItem value="AS923">AS923</MenuItem>
+                    <MenuItem value="EU868">EU868</MenuItem>
+                    <MenuItem value="US915">US915</MenuItem>
+                  </Select>
+                </FormControl> */}
               </Box>
-              <Box className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
-                <Box>
-                  <InputLabel htmlFor="mov-thr">MOV THR</InputLabel>
-                  <Input
-                    id="mov-thr"
-                    {...sensor_form_api.register("mov-thr")}
-                    defaultValue={current_sensor?.data.common_data[1]?.value}
-                  />
-                </Box>
-                <Box>
-                  <InputLabel htmlFor="adc-delay">ADC Delay</InputLabel>
-                  <Input
-                    id="adc-delay"
-                    {...sensor_form_api.register("adc-delay")}
-                    defaultValue={current_sensor?.data.common_data[1]?.value}
-                  />
-                </Box>
+              <Box
+                style={{
+                  border: "1px solid black",
+                  padding: "0.5rem",
+                  borderRadius: "8px",
+                }}
+              >
+                <Controller
+                  control={sensor_form_api.control}
+                  name="temperature"
+
+                  defaultValue={get_current_sensor_data("temperature") as number}
+                  render={({ field }) => (
+                    <>
+                      <InputLabel htmlFor="temperature">Temperature</InputLabel>
+                      <Input
+                        {...field}
+                      />
+                    </>
+                  )}
+
+                />
               </Box>
-              <Box className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
-                <Box>
-                  <InputLabel htmlFor="company-name">Company Name</InputLabel>
-                  <Input
-                    id="company-name"
-                    {...sensor_form_api.register("company-name")}
-                    defaultValue={current_sensor?.data.common_data[1]?.value}
-                  />
-                </Box>
-                <Box style={{ display: "flex", alignItems: "center" }}>
-                  <Checkbox
-                    {...sensor_form_api.register("adc-enable")}
-                    checked={convertoToBoolean(
-                      current_sensor?.data.common_data[1]?.value,
-                    )}
-                  />
-                  <span>ADC Enable</span>
-                </Box>
+              <Box
+                style={{
+                  border: "1px solid black",
+                  padding: "0.5rem",
+                  borderRadius: "8px",
+                }}
+              >
+                <Controller
+                  control={sensor_form_api.control}
+                  name="humidity"
+
+                  defaultValue={get_current_sensor_data("humidity") as number}
+                  render={({ field }) => (
+                    <>
+                      <InputLabel htmlFor="humidity">Humidity</InputLabel>
+                      <Input
+                        {...field}
+                      />
+                    </>
+                  )}
+
+                />
               </Box>
             </Box>
-          )}
-          <Box className="mt-4 flex justify-between">
+
             <Button
-              onClick={sensor_form_api.handleSubmit(
-                (data: SensorFormSchemaType) => onSubmit(data, true),
-              )}
+              onClick={() => setShowAdditionalDetails(!showAdditionalDetails)}
               style={{
-                backgroundColor: "#4CAF50",
+                backgroundColor: "#008CBA",
                 color: "white",
                 padding: "10px 20px",
+                border: "none",
+                cursor: "pointer",
+                marginTop: "20px",
               }}
             >
-              Accept
+              {showAdditionalDetails ? "Show Less" : "Show More"}
             </Button>
-            <Button onClick={async () => await signOut()}>Odjavi se</Button>
-            <Button
-              href="/konec"
-              onClick={async () => {
-                // await createFolderAndSpreadsheet();
-                set_current_sensor_index(0);
-              }}
-              style={{
-                backgroundColor: "#f44336",
-                color: "white",
-                padding: "10px 20px",
-              }}
-            >
-              Finish
-            </Button>
-            <Button
-              onClick={sensor_form_api.handleSubmit(
-                (data: SensorFormSchemaType) => onSubmit(data, false),
-              )}
-              style={{
-                backgroundColor: "#4CAF50",
-                color: "white",
-                padding: "10px 20px",
-              }}
-            >
-              not Accept
-            </Button>
+            {showAdditionalDetails && (
+              <Box className="mt-4">
+                <Box className="grid grid-cols-1 gap-6 md:grid-cols-4">
+                  <Box>
+                    <Controller
+                      control={sensor_form_api.control}
+                      name="join-eui"
+
+                      defaultValue={get_current_sensor_data("join-eui") as string}
+                      render={({ field }) => (
+                        <>
+                          <InputLabel htmlFor="join-eui">Join EUI</InputLabel>
+                          <Input
+                            {...field}
+                          />
+                        </>
+                      )}
+
+                    />
+
+                  </Box>
+                  <Box>
+                    <Controller
+                      control={sensor_form_api.control}
+                      name="app-key"
+
+                      defaultValue={get_current_sensor_data("app-key") as string}
+                      render={({ field }) => (
+                        <>
+                          <InputLabel htmlFor="app-key">App Key</InputLabel>
+                          <Input
+                            {...field}
+                          />
+                        </>
+                      )}
+
+                    />
+
+                  </Box>
+                  <Box>
+                    <Controller
+                      control={sensor_form_api.control}
+                      name="send-period"
+
+                      defaultValue={get_current_sensor_data("send-period") as number}
+                      render={({ field }) => (
+                        <>
+                          <InputLabel htmlFor="send-period">Send Period</InputLabel>
+                          <Input
+                            {...field}
+                          />
+                        </>
+                      )}
+
+                    />
+                  </Box>
+                  <Box>
+                    <Controller
+                      control={sensor_form_api.control}
+                      name="ack"
+
+                      defaultValue={get_current_sensor_data("ack") as number}
+                      render={({ field }) => (
+                        <>
+                          <InputLabel htmlFor="ack">ACK</InputLabel>
+                          <Input
+                            {...field}
+                          />
+                        </>
+                      )}
+
+                    />
+                  </Box>
+                </Box>
+                <Box className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <Box>
+                    <Controller
+                      control={sensor_form_api.control}
+                      name="mov-thr"
+
+                      defaultValue={get_current_sensor_data("mov-thr") as number}
+                      render={({ field }) => (
+                        <>
+                          <InputLabel htmlFor="mov-thr">MOV THR</InputLabel>
+                          <Input
+                            {...field}
+                          />
+                        </>
+                      )}
+
+                    />
+
+                  </Box>
+                  <Box>
+                    <Controller
+                      control={sensor_form_api.control}
+                      name="adc-delay"
+
+                      defaultValue={get_current_sensor_data("adc-delay") as number}
+                      render={({ field }) => (
+                        <>
+                          <InputLabel htmlFor="adc-delay">ADC Delay</InputLabel>
+                          <Input
+                            {...field}
+                          />
+                        </>
+                      )}
+
+                    />
+                  </Box>
+                </Box>
+                <Box className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
+                  {/*To dobimo iz  parameters strani sm je treba povezavo med strannema nardit */}
+                  <Box>
+                    <InputLabel htmlFor="company-name">Company Name</InputLabel>
+                    <Input
+                      id="company-name"
+                      {...sensor_form_api.register("company-name")}
+                      defaultValue={current_sensor?.data.common_data[1]?.value}
+                    />
+                  </Box>
+                  <Box style={{ display: "flex", alignItems: "center" }}>
+                    <Controller
+                      name="adc-enable"
+                      control={sensor_form_api.control}
+                      rules={{ required: true }}
+                      render={({ field }) => <Checkbox {...field} />}
+                    />
+                    <span>ADC Enable</span>
+                  </Box>
+                </Box>
+              </Box>
+            )}
+            <Box className="mt-4 flex justify-between">
+              <Button
+                onClick={sensor_form_api.handleSubmit(
+                  (data: SensorFormSchemaType) => onSubmit(data, true),
+                )}
+                style={{
+                  backgroundColor: "#4CAF50",
+                  color: "white",
+                  padding: "10px 20px",
+                }}
+              >
+                Accept
+              </Button>
+              <Button onClick={async () => await signOut()}>Odjavi se</Button>
+              <Button
+                href="/konec"
+                onClick={async () => {
+                  // await createFolderAndSpreadsheet();
+                  set_current_sensor_index(0);
+                }}
+                style={{
+                  backgroundColor: "#f44336",
+                  color: "white",
+                  padding: "10px 20px",
+                }}
+              >
+                Finish
+              </Button>
+              <Button
+                onClick={sensor_form_api.handleSubmit(
+                  (data: SensorFormSchemaType) => onSubmit(data, false),
+                )}
+                style={{
+                  backgroundColor: "#4CAF50",
+                  color: "white",
+                  padding: "10px 20px",
+                }}
+              >
+                not Accept
+              </Button>
+            </Box>
           </Box>
         </Box>
-      </Box>
     </form>
   );
 };
