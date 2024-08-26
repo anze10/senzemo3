@@ -24,9 +24,10 @@ import {
 } from "./SensorStore";
 import { set, z } from "zod";
 import { Name } from "src/server/create_foldet";
+import { Session } from "next-auth";
 
 const sensor_form_schema = z.object({
-  "device-eui": z.string(),
+  "dev_eui": z.string(),
   status: z.number(),
   "frequency-region": z.string(),
   temperature: z.number(),
@@ -38,14 +39,15 @@ const sensor_form_schema = z.object({
   "mov-thr": z.number(),
   "adc-delay": z.number(),
   "company-name": z.string(),
-  "adc-enable": z.number(),
+  "adc-enable": z.boolean(),
 });
 export type SensorFormSchemaType = z.infer<typeof sensor_form_schema>;
 
-const SerialPortComponent: React.FC = () => {
+const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
+
   const portRef = useRef<SerialPort | null>(null);
 
-  const handleClick = async (onDataReceived: (data: string) => void) => {
+  const GetDataFromSensor = async (onDataReceived: (data: string) => void) => {
     try {
       if (!portRef.current) {
         portRef.current = await connectToPort();
@@ -59,9 +61,9 @@ const SerialPortComponent: React.FC = () => {
     }
   };
 
-  const [user, setUser] = useState<string>("John Doe");
-  const name = Name();
-  // setUser(name);
+
+  const name = session?.user.name;
+
   const [showAdditionalDetails, setShowAdditionalDetails] =
     useState<boolean>(false);
 
@@ -126,13 +128,16 @@ const SerialPortComponent: React.FC = () => {
     } else return false;
   }
 
-  function get_current_sensor_data(key: string): unknown {
+  const get_current_sensor_data = useCallback((key: string) => {
     return current_sensor?.data.common_data.find(
       (key_value) => key_value.name === key,
     )?.value;
-  }
+  }, [current_sensor])
 
   const sensor_form_api = useForm<SensorFormSchemaType>();
+  useEffect(() => {
+    console.log("current_sensor", current_sensor)
+  }, [current_sensor]);
 
   const onSubmit = async (data: SensorFormSchemaType, okay: boolean) => {
     console.log("onSubmit before", {
@@ -161,8 +166,14 @@ const SerialPortComponent: React.FC = () => {
     sensor_form_api.reset();
 
     // set_current_sensor_index(current_sensor_index + 1);
-    await handleClick((data) => add_new_sensor(data));
+    await GetDataFromSensor((data) => add_new_sensor(data));
+
   };
+  const updateForm = (data) => {
+    add_new_sensor(data)
+    for (const key of data.)
+      sensor_form_api.setValue()
+  }
 
   return (
     <form>
@@ -179,7 +190,7 @@ const SerialPortComponent: React.FC = () => {
           <a href="/pregleduj">Pregleduj</a>
           <Button
             onClick={async () =>
-              await handleClick((data) => add_new_sensor(data))
+              await GetDataFromSensor(updateForm)
             }
             style={{
               backgroundColor: "#4CAF50",
@@ -192,7 +203,7 @@ const SerialPortComponent: React.FC = () => {
             Open Serial Port
           </Button>
           <Box style={{ display: "flex", alignItems: "center" }}>
-            <span>{user}</span>
+            <span>{name}</span>
           </Box>
         </Box>
         <Box className="px-6 py-8 md:px-8 md:py-12">
@@ -223,18 +234,14 @@ const SerialPortComponent: React.FC = () => {
             >
               <Controller
                 control={sensor_form_api.control}
-                name="device-eui"
-                /* TODO: v SensorStore -> COMMON_PROPERTIES imaš dev_eui, tukaj imaš device-eui */
+                name="dev_eui"
+
                 defaultValue={get_current_sensor_data("dev_eui") as string}
                 render={({ field }) => (
                   <>
-                    <InputLabel htmlFor="device-eui">Device EUI</InputLabel>
+                    <InputLabel htmlFor="dev_eui">Device EUI</InputLabel>
                     <Input
                       {...field}
-                      /* id="device-eui"
-                      {...sensor_form_api.register("device-eui")}
-                      placeholder="Device EUI will be auto-filled from NFC tag"
-                      defaultValue={current_sensor?.data.common_data[0]?.value} */
                     />
                   </>
                 )}
@@ -275,7 +282,7 @@ const SerialPortComponent: React.FC = () => {
                 <Select
                   id="frequency-region"
                   {...sensor_form_api.register("frequency-region")}
-                  // defaultValue={current_sensor?.data.common_data[2]?.value}
+                // defaultValue={current_sensor?.data.common_data[2]?.value}
                 >
                   <MenuItem value="AS923">AS923</MenuItem>
                   <MenuItem value="EU868">EU868</MenuItem>

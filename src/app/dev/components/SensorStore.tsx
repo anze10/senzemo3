@@ -33,15 +33,21 @@ export type RatedSensorData = {
 interface SensorState {
   current_sensor_index: number;
   sensors: RatedSensorData[];
+  reset: () => void;
   add_new_sensor: (data: string) => void;
   set_current_sensor_index: (new_index: number) => void;
   set_sensor_status: (sensor_number: number, okay: boolean) => void;
   set_sensor_data: (sensor_number: number, new_data: SensorData) => void;
 }
-
-const sensor_callback: StateCreator<SensorState, [], []> = (set) => ({
+const initial_state = {
   current_sensor_index: 0,
-  sensors: [],
+  sensors: []
+}
+const sensor_callback: StateCreator<SensorState, [], []> = (set) => ({
+  ...initial_state,
+  reset: () => {
+    set(() => initial_state)
+  },
   add_new_sensor: (data) => {
     const parsed_data = JSON.parse(data) as SensorJSON;
     const sensor_name = parsed_data.family_id as SensorModel;
