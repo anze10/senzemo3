@@ -13,7 +13,6 @@ export type SensorKeyValuePair = {
   value: unknown;
 };
 
-
 export const COMMON_PROPERTIES = [
   "app_key",
   "dev_eui",
@@ -24,7 +23,6 @@ export const COMMON_PROPERTIES = [
   "lora",
 ];
 
-
 type SensorJSON = Record<string, unknown>;
 
 export type RatedSensorData = {
@@ -33,19 +31,18 @@ export type RatedSensorData = {
 };
 
 interface SensorState {
+  current_sensor_index: number;
   sensors: RatedSensorData[];
-  initialize_sensor_data: (data: string) => void;
+  add_new_sensor: (data: string) => void;
+  set_current_sensor_index: (new_index: number) => void;
   set_sensor_status: (sensor_number: number, okay: boolean) => void;
-  change_sensor_data: (sensor_number: number, new_data: SensorData) => void;
+  set_sensor_data: (sensor_number: number, new_data: SensorData) => void;
 }
 
-/* 
-StateCreator<SensorState, [], [["zustand/persist", SensorState]]>' is not assignable to parameter of type 'StateCreator<SensorState, [], []>'.
-*/
-
 const sensor_callback: StateCreator<SensorState, [], []> = (set) => ({
+  current_sensor_index: 0,
   sensors: [],
-  initialize_sensor_data: (data) => {
+  add_new_sensor: (data) => {
     const parsed_data = JSON.parse(data) as SensorJSON;
     const sensor_name = parsed_data.family_id as SensorModel;
 
@@ -57,14 +54,19 @@ const sensor_callback: StateCreator<SensorState, [], []> = (set) => ({
       custom_data,
     };
 
+    console.log("Adding new sensor:", new_data);
     set(
       produce((state: SensorState) => {
         state.sensors.push({
           data: new_data,
         });
+
+        state.current_sensor_index = state.sensors.length - 1;
       }),
     );
   },
+  set_current_sensor_index: (new_index: number) =>
+    set({ current_sensor_index: new_index }),
   set_sensor_status: (sensor_number, okay) => {
     set(
       produce((state: SensorState) => {
@@ -75,7 +77,7 @@ const sensor_callback: StateCreator<SensorState, [], []> = (set) => ({
       }),
     );
   },
-  change_sensor_data: (sensor_number, new_data) => {
+  set_sensor_data: (sensor_number, new_data) => {
     set(
       produce((state: SensorState) => {
         const this_sensor = state.sensors[sensor_number];
@@ -94,7 +96,7 @@ export const useSensorStore = create<SensorState>()(
   }),
 );
 
-enum SensorModel {
+export enum SensorModel {
   SMC30,
   SSM40,
   STO10,

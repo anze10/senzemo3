@@ -15,7 +15,7 @@ export default function NewSensorSetter() {
   const current_sensor = useSensorStore((state) => state.sensors[sensorNumber]);
   const all_sensors = useSensorStore((state) => state.sensors);
   const initialize_sensor_data = useSensorStore(
-    (state) => state.initialize_sensor_data,
+    (state) => state.add_new_sensor,
   );
   const set_sensor_status = useSensorStore((state) => state.set_sensor_status);
 
@@ -25,8 +25,8 @@ export default function NewSensorSetter() {
   }, [initialize_sensor_data, sensorNumber]);
 
   useEffect(() => {
-    console.log(all_sensors)
-  }, [all_sensors])
+    console.log(all_sensors);
+  }, [all_sensors]);
   return (
     <div>
       <button onClick={() => setSensorNumber(sensorNumber - 1)}>

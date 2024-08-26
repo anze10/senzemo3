@@ -1,15 +1,11 @@
-
-import { useRef } from "react";
-
-
-export const connectToPort = async (): Promise<unknown> => {
+export const connectToPort = async (): Promise<SerialPort> => {
   try {
     console.log("Requesting port...");
-    const port = await (navigator as any).serial.requestPort();
+    const port = await navigator.serial.requestPort();
     console.log("Port requested:", port);
 
     console.log("Opening port...");
-    await (port as any).open({ baudRate: 4800 });
+    await port.open({ baudRate: 4800 });
     console.log("Port opened.");
 
     return port;
@@ -19,15 +15,17 @@ export const connectToPort = async (): Promise<unknown> => {
   }
 };
 
-
-export const readDataFromPort = async (port: unknown, onDataReceived: (data: string) => void) => {
-  if (typeof port !== "object" || port === null) {
+export const readDataFromPort = async (
+  port: SerialPort,
+  onDataReceived: (data: string) => void,
+) => {
+  /* if (typeof port !== "object" || port === null) {
     console.error("Invalid port object");
     return;
-  }
+  } */
 
   const textDecoder = new TextDecoderStream();
-  const readableStream = (port as any).readable;
+  const readableStream = port.readable;
 
   if (!readableStream) {
     console.error("Port does not have a readable stream.");
@@ -53,26 +51,20 @@ export const readDataFromPort = async (port: unknown, onDataReceived: (data: str
       if (value) {
         console.log("Received raw data chunk:", value);
 
-
         if (value.includes("{")) {
           isJsonStarted = true;
         }
 
-
         if (isJsonStarted) {
           receivedData += value;
 
-
-          openBracesCount += (value.match(/{/g) || []).length;
-          closeBracesCount += (value.match(/}/g) || []).length;
-
+          openBracesCount += (value.match(/{/g) ?? []).length;
+          closeBracesCount += (value.match(/}/g) ?? []).length;
 
           if (openBracesCount === closeBracesCount && openBracesCount > 0) {
             console.log("Received full JSON string:", receivedData);
 
-
             onDataReceived(receivedData);
-
 
             receivedData = "";
             openBracesCount = 0;
@@ -89,6 +81,3 @@ export const readDataFromPort = async (port: unknown, onDataReceived: (data: str
     console.log("Reader lock released.");
   }
 };
-
-
-

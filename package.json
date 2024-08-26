@@ -45,6 +45,7 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "@types/dom-serial": "^1.0.6",
     "@types/eslint": "^8.56.10",
     "@types/node": "^20.14.10",
     "@types/react": "^18.3.3",

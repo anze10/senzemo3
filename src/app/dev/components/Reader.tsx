@@ -19,6 +19,7 @@ import { createFolderAndSpreadsheet } from "~/server/create_foldet";
 import {
   type SensorData,
   type SensorKeyValuePair,
+  SensorModel,
   useSensorStore,
 } from "./SensorStore";
 import { set, z } from "zod";
@@ -42,7 +43,7 @@ const sensor_form_schema = z.object({
 export type SensorFormSchemaType = z.infer<typeof sensor_form_schema>;
 
 const SerialPortComponent: React.FC = () => {
-  const portRef = useRef<unknown>(null);
+  const portRef = useRef<SerialPort | null>(null);
 
   const handleClick = async (onDataReceived: (data: string) => void) => {
     try {
@@ -58,10 +59,6 @@ const SerialPortComponent: React.FC = () => {
     }
   };
 
-  const sensor_form_api = useForm<SensorFormSchemaType>();
-  const onSubmit = (data: SensorFormSchemaType, okay: boolean) =>
-    console.log(data, okay, current_sensor?.data.common_data[1]?.value);
-
   const [user, setUser] = useState<string>("John Doe");
   const name = Name();
   // setUser(name);
@@ -73,27 +70,38 @@ const SerialPortComponent: React.FC = () => {
     console.log(parsedData);
   }, []);
 
-  const handleButtonClick = useCallback(async () => {
+  /* const handleButtonClick = useCallback(async () => {
     await handleClick(handleDataReceived);
-  }, [handleDataReceived]);
+  }, [handleDataReceived]); */
 
-  const [sensorNumber, setSensorNumber] = useState(0);
-
-  const current_sensor = useSensorStore((state) => state.sensors[sensorNumber]);
-  const all_sensors = useSensorStore((state) => state.sensors);
-  const initialize_sensor_data = useSensorStore(
-    (state) => state.initialize_sensor_data,
+  const current_sensor_index = useSensorStore(
+    (state) => state.current_sensor_index,
   );
+
+  const current_sensor = useSensorStore(
+    (state) => state.sensors[state.current_sensor_index],
+  );
+
+  const all_sensors = useSensorStore((state) => state.sensors);
+
+  const add_new_sensor = useSensorStore((state) => state.add_new_sensor);
+
   const set_sensor_status = useSensorStore((state) => state.set_sensor_status);
 
-  useEffect(() => {
+  const set_sensor_data = useSensorStore((state) => state.set_sensor_data);
+
+  const set_current_sensor_index = useSensorStore(
+    (state) => state.set_current_sensor_index,
+  );
+
+  /* useEffect(() => {
     // zamenjaj z funkcijo ki uporabi prejšn socket
     void handleClick((data) => initialize_sensor_data(data));
-  }, [initialize_sensor_data, sensorNumber]);
+  }, [initialize_sensor_data, sensorNumber]); */
 
-  useEffect(() => {
+  /* useEffect(() => {
     console.log(all_sensors);
-  }, [all_sensors]);
+  }, [all_sensors]); */
 
   const getStatusColor = useCallback((status: number) => {
     switch (status) {
@@ -108,15 +116,53 @@ const SerialPortComponent: React.FC = () => {
     }
   }, []);
 
-  function addSensor() {
+  /* function addSensor() {
     throw new Error("Function not implemented.");
-  }
+  } */
 
   function convertoToBoolean(value: unknown): boolean | undefined {
     if (value === 1) {
       return true;
     } else return false;
   }
+
+  function get_current_sensor_data(key: string): unknown {
+    return current_sensor?.data.common_data.find(
+      (key_value) => key_value.name === key,
+    )?.value;
+  }
+
+  const sensor_form_api = useForm<SensorFormSchemaType>();
+
+  const onSubmit = async (data: SensorFormSchemaType, okay: boolean) => {
+    console.log("onSubmit before", {
+      all_sensors,
+      current_sensor_index,
+      current_sensor,
+    });
+    set_sensor_status(current_sensor_index, okay);
+
+    const keys = Object.keys(data) as (keyof SensorFormSchemaType)[];
+    set_sensor_data(current_sensor_index, {
+      sensor_name: SensorModel.SMC30, // TODO: iz katerega property data dobiš ime senzorja?
+      common_data: keys.map((key) => {
+        const value = data[key];
+        return { name: key, value } as SensorKeyValuePair;
+      }),
+      custom_data: [], // TODO: Add custom data
+    });
+
+    console.log("onSubmit after", {
+      all_sensors,
+      current_sensor_index,
+      current_sensor,
+    });
+
+    sensor_form_api.reset();
+
+    // set_current_sensor_index(current_sensor_index + 1);
+    await handleClick((data) => add_new_sensor(data));
+  };
 
   return (
     <form>
@@ -132,7 +178,9 @@ const SerialPortComponent: React.FC = () => {
         >
           <a href="/pregleduj">Pregleduj</a>
           <Button
-            onClick={handleButtonClick}
+            onClick={async () =>
+              await handleClick((data) => add_new_sensor(data))
+            }
             style={{
               backgroundColor: "#4CAF50",
               color: "white",
@@ -149,6 +197,7 @@ const SerialPortComponent: React.FC = () => {
         </Box>
         <Box className="px-6 py-8 md:px-8 md:py-12">
           <h1 className="mb-8 text-center text-3xl font-bold">SENZEMO</h1>
+          <h2 className="py-4">Senzor št: {current_sensor_index}</h2>
           <Box
             style={{
               display: "flex",
@@ -176,11 +225,7 @@ const SerialPortComponent: React.FC = () => {
                 control={sensor_form_api.control}
                 name="device-eui"
                 /* TODO: v SensorStore -> COMMON_PROPERTIES imaš dev_eui, tukaj imaš device-eui */
-                defaultValue={
-                  current_sensor?.data.common_data.find(
-                    (key_value) => key_value.name === "dev_eui",
-                  )?.value as string
-                }
+                defaultValue={get_current_sensor_data("dev_eui") as string}
                 render={({ field }) => (
                   <>
                     <InputLabel htmlFor="device-eui">Device EUI</InputLabel>
@@ -374,9 +419,10 @@ const SerialPortComponent: React.FC = () => {
             <Button onClick={async () => await signOut()}>Odjavi se</Button>
             <Button
               href="/konec"
-              // onClick={async () => {
-              //   await createFolderAndSpreadsheet();
-              // }}
+              onClick={async () => {
+                // await createFolderAndSpreadsheet();
+                set_current_sensor_index(0);
+              }}
               style={{
                 backgroundColor: "#f44336",
                 color: "white",
