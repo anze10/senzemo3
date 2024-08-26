@@ -45,8 +45,7 @@ const SerialPortComponent: React.FC = () => {
 
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm<any>();
-  const onSubmit: SubmitHandler<any> = data => console.log(data);
-
+  const onSubmit = (data: FormData, okay: boolean) => console.log(data, okay, current_sensor?.data.common_data[1]?.value);
 
   const [user, setUser] = useState<string>("John Doe");
 
@@ -110,7 +109,7 @@ const SerialPortComponent: React.FC = () => {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form>
       <Box style={{ fontFamily: "Montserrat, sans-serif", width: "100%" }}>
         <Box
           style={{
@@ -330,7 +329,8 @@ const SerialPortComponent: React.FC = () => {
           )}
           <Box className="mt-4 flex justify-between">
             <Button
-              onClick={handleSubmit((data: FormData) => onSubmit(data))}
+              onClick={handleSubmit((data: FormData) => onSubmit(data, true))
+              }
               style={{
                 backgroundColor: "#4CAF50",
                 color: "white",
@@ -341,9 +341,10 @@ const SerialPortComponent: React.FC = () => {
             </Button>
             <Button onClick={async () => await signOut()}>Odjavi se</Button>
             <Button
-              onClick={async () => {
-                await createFolderAndSpreadsheet();
-              }}
+              href="/konec"
+              // onClick={async () => {
+              //   await createFolderAndSpreadsheet();
+              // }}
               style={{
                 backgroundColor: "#f44336",
                 color: "white",
@@ -353,7 +354,7 @@ const SerialPortComponent: React.FC = () => {
               Finish
             </Button>
             <Button
-              onClick={handleSubmit((data: FormData) => onSubmit(data))}
+              onClick={handleSubmit((data: FormData) => onSubmit(data, false))}
               style={{
                 backgroundColor: "#4CAF50",
                 color: "white",
