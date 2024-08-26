@@ -21,7 +21,8 @@ import {
   type SensorKeyValuePair,
   useSensorStore,
 } from "./SensorStore";
-import { z } from "zod";
+import { set, z } from "zod";
+import { Name } from "src/server/create_foldet";
 
 const sensor_form_schema = z.object({
   "device-eui": z.string(),
@@ -62,7 +63,8 @@ const SerialPortComponent: React.FC = () => {
     console.log(data, okay, current_sensor?.data.common_data[1]?.value);
 
   const [user, setUser] = useState<string>("John Doe");
-
+  const name = Name();
+  // setUser(name);
   const [showAdditionalDetails, setShowAdditionalDetails] =
     useState<boolean>(false);
 

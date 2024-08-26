@@ -2,6 +2,7 @@
 import { auth } from "~/server/auth";
 import { OAuth2Client } from "google-auth-library";
 import { google } from "googleapis";
+import { sessions } from './db/schema';
 
 // Funkcija za ustvarjanje mape
 async function createFolder(client: OAuth2Client) {
@@ -74,6 +75,7 @@ export async function createFolderAndSpreadsheet() {
 
     client.setCredentials({
         access_token: session?.user.token,
+
     });
 
     const tokenInfo = await client.getTokenInfo(session?.user.token!);
@@ -93,4 +95,9 @@ export async function createFolderAndSpreadsheet() {
         console.error(err);
         throw err;
     }
+}
+export async function Name() {
+    const session = await auth();
+    const name = session?.user.name;
+    return name as string;
 }
