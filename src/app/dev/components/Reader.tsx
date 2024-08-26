@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, Controller } from "react-hook-form";
 
 import {
   Checkbox,
@@ -172,12 +172,27 @@ const SerialPortComponent: React.FC = () => {
                 borderRadius: "8px",
               }}
             >
-              <InputLabel htmlFor="device-eui">Device EUI</InputLabel>
-              <Input
-                id="device-eui"
-                {...sensor_form_api.register("device-eui")}
-                placeholder="Device EUI will be auto-filled from NFC tag"
-                defaultValue={current_sensor?.data.common_data[0]?.value}
+              <Controller
+                control={sensor_form_api.control}
+                name="device-eui"
+                /* TODO: v SensorStore -> COMMON_PROPERTIES imaš dev_eui, tukaj imaš device-eui */
+                defaultValue={
+                  current_sensor?.data.common_data.find(
+                    (key_value) => key_value.name === "dev_eui",
+                  )?.value as string
+                }
+                render={({ field }) => (
+                  <>
+                    <InputLabel htmlFor="device-eui">Device EUI</InputLabel>
+                    <Input
+                      {...field}
+                      /* id="device-eui"
+                      {...sensor_form_api.register("device-eui")}
+                      placeholder="Device EUI will be auto-filled from NFC tag"
+                      defaultValue={current_sensor?.data.common_data[0]?.value} */
+                    />
+                  </>
+                )}
               />
             </Box>
             <Box
@@ -215,7 +230,7 @@ const SerialPortComponent: React.FC = () => {
                 <Select
                   id="frequency-region"
                   {...sensor_form_api.register("frequency-region")}
-                  defaultValue={current_sensor?.data.common_data[2]?.value}
+                  // defaultValue={current_sensor?.data.common_data[2]?.value}
                 >
                   <MenuItem value="AS923">AS923</MenuItem>
                   <MenuItem value="EU868">EU868</MenuItem>
