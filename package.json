@@ -40,9 +40,9 @@
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.0",
     "react-scripts": "^5.0.1",
-    "react-select": "^5.8.0",
     "use-google-sheets": "^2.0.0",
     "zod": "^3.23.8",
+    "zod-key-parser": "^1.5.5",
     "zustand": "^4.5.5"
   },
   "devDependencies": {

@@ -1,13 +1,14 @@
 "use client";
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
-import Select from "react-select";
 import {
   Checkbox,
   Button,
   InputLabel,
   Input,
   Box,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { connectToPort, readDataFromPort } from "./HandleClick";
 import parseJsonString from "./Parser";
@@ -21,11 +22,12 @@ import {
 } from "./SensorStore";
 import { set, z } from "zod";
 import { Session } from "next-auth";
+import { parseZodSchema } from "zod-key-parser";
 
-const sensor_form_schema = z.object({
-  "dev_eui": z.string(),
+export const sensor_form_schema = z.object({
+  dev_eui: z.string(),
   status: z.number(),
-  "frequency-region": z.string(),
+  "frequency-region": z.enum(["AS923", "EU868", "US915", ""]),
   temperature: z.number(),
   humidity: z.number(),
   "join-eui": z.string(),
@@ -37,10 +39,11 @@ const sensor_form_schema = z.object({
   "company-name": z.string(),
   "adc-enable": z.boolean(),
 });
+
+const parsed_sensor_schema = parseZodSchema(sensor_form_schema);
 export type SensorFormSchemaType = z.infer<typeof sensor_form_schema>;
 
 const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
-
   const portRef = useRef<SerialPort | null>(null);
 
   const GetDataFromSensor = async (onDataReceived: (data: string) => void) => {
@@ -57,16 +60,13 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     }
   };
 
-
-  const name = session?.user.name;
-
   const [showAdditionalDetails, setShowAdditionalDetails] =
     useState<boolean>(false);
 
-  const handleDataReceived = useCallback((data: string): void => {
+  /* const handleDataReceived = useCallback((data: string): void => {
     const parsedData = parseJsonString(data);
     console.log(parsedData);
-  }, []);
+  }, []); */
 
   /* const handleButtonClick = useCallback(async () => {
     await handleClick(handleDataReceived);
@@ -124,15 +124,18 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     } else return false;
   }
 
-  const get_current_sensor_data = useCallback((key: string) => {
-    return current_sensor?.data.common_data.find(
-      (key_value) => key_value.name === key,
-    )?.value;
-  }, [current_sensor])
+  const get_current_sensor_data = useCallback(
+    (key: string) => {
+      return current_sensor?.data.common_data.find(
+        (key_value) => key_value.name === key,
+      )?.value;
+    },
+    [current_sensor],
+  );
 
   const sensor_form_api = useForm<SensorFormSchemaType>();
   useEffect(() => {
-    console.log("current_sensor", current_sensor)
+    console.log("current_sensor", current_sensor);
   }, [current_sensor]);
 
   const onSubmit = async (data: SensorFormSchemaType, okay: boolean) => {
@@ -163,22 +166,33 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
 
     // set_current_sensor_index(current_sensor_index + 1);
     await GetDataFromSensor((data) => add_new_sensor(data));
-
   };
-  function updateForm(data: string): void {
-    throw new Error("Function not implemented.");
-  }
 
-  // const updateForm = (data) => {
-  //   add_new_sensor(data)
-  //   for (const key of data.)
-  //     sensor_form_api.setValue()
-  // }
+  /* const updateForm = (data: string) => {
+    add_new_sensor(data);
+
+    for (const key of data.)
+      sensor_form_api.setValue()
+  }; */
+
+  useEffect(() => {
+    if (!current_sensor?.data?.common_data) return;
+
+    for (const key in parsed_sensor_schema.keys) {
+      sensor_form_api.setValue(
+        key as keyof SensorFormSchemaType,
+        get_current_sensor_data(key) as string | number | boolean,
+      );
+    }
+  }, [
+    current_sensor?.data?.common_data,
+    get_current_sensor_data,
+    sensor_form_api,
+  ]);
 
   return (
     <form>
       <Box style={{ fontFamily: "Montserrat, sans-serif", width: "100%" }}>
-
         <Box
           style={{
             display: "flex",
@@ -191,7 +205,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
           <a href="/pregleduj">Pregleduj</a>
           <Button
             onClick={async () =>
-              await GetDataFromSensor(updateForm)
+              await GetDataFromSensor((data) => add_new_sensor(data))
             }
             style={{
               backgroundColor: "#4CAF50",
@@ -204,7 +218,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
             Open Serial Port
           </Button>
           <Box style={{ display: "flex", alignItems: "center" }}>
-            <span>{name}</span>
+            <span>{session?.user.name}</span>
           </Box>
         </Box>
         <Box className="px-6 py-8 md:px-8 md:py-12">
@@ -236,14 +250,11 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
               <Controller
                 control={sensor_form_api.control}
                 name="dev_eui"
-
                 defaultValue={get_current_sensor_data("dev_eui") as string}
                 render={({ field }) => (
                   <>
                     <InputLabel htmlFor="dev_eui">Device EUI</InputLabel>
-                    <Input
-                      {...field}
-                    />
+                    <Input {...field} />
                   </>
                 )}
               />
@@ -274,7 +285,6 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
                     />
                   </>
                 )}
-
               />
             </Box>
             <Box
@@ -284,35 +294,21 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
                 borderRadius: "8px",
               }}
             >
-              {/* ne znam zrihtaht */}
+              <InputLabel htmlFor="frequency-region">
+                Frequency Region
+              </InputLabel>
               <Controller
                 name="frequency-region"
                 control={sensor_form_api.control}
-                render={({ field }) => <Select
-                  {...field}
-                  options={[
-                    { value: "AS923", label: "AS923" },
-                    { value: "EU868", label: "EU868" },
-                    { value: "US915", label: "US915" }
-                  ]}
-                />}
-              />
-
-
-              {/* <InputLabel htmlFor="frequency-region">
-                  Frequency Region
-                </InputLabel>
-                <FormControl fullWidth>
-                  <Select
-                    id="frequency-region"
-                    {...sensor_form_api.register("frequency-region")}
-                  // defaultValue={current_sensor?.data.common_data[2]?.value}
-                  >
+                defaultValue=""
+                render={({ field }) => (
+                  <Select id="frequency-region" {...field}>
                     <MenuItem value="AS923">AS923</MenuItem>
                     <MenuItem value="EU868">EU868</MenuItem>
                     <MenuItem value="US915">US915</MenuItem>
                   </Select>
-                </FormControl> */}
+                )}
+              />
             </Box>
             <Box
               style={{
@@ -324,17 +320,13 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
               <Controller
                 control={sensor_form_api.control}
                 name="temperature"
-
                 defaultValue={get_current_sensor_data("temperature") as number}
                 render={({ field }) => (
                   <>
                     <InputLabel htmlFor="temperature">Temperature</InputLabel>
-                    <Input
-                      {...field}
-                    />
+                    <Input {...field} />
                   </>
                 )}
-
               />
             </Box>
             <Box
@@ -347,20 +339,15 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
               <Controller
                 control={sensor_form_api.control}
                 name="humidity"
-
                 defaultValue={get_current_sensor_data("humidity") as number}
                 render={({ field }) => (
                   <>
                     <InputLabel htmlFor="humidity">Humidity</InputLabel>
-                    <Input
-                      {...field}
-                    />
+                    <Input {...field} />
                   </>
                 )}
-
               />
             </Box>
-
           </Box>
           <Button
             onClick={() => setShowAdditionalDetails(!showAdditionalDetails)}
@@ -382,70 +369,56 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
                   <Controller
                     control={sensor_form_api.control}
                     name="join-eui"
-
                     defaultValue={get_current_sensor_data("join-eui") as string}
                     render={({ field }) => (
                       <>
                         <InputLabel htmlFor="join-eui">Join EUI</InputLabel>
-                        <Input
-                          {...field}
-                        />
+                        <Input {...field} />
                       </>
                     )}
-
                   />
-
                 </Box>
                 <Box>
                   <Controller
                     control={sensor_form_api.control}
                     name="app-key"
-
                     defaultValue={get_current_sensor_data("app-key") as string}
                     render={({ field }) => (
                       <>
                         <InputLabel htmlFor="app-key">App Key</InputLabel>
-                        <Input
-                          {...field}
-                        />
+                        <Input {...field} />
                       </>
                     )}
-
                   />
-
                 </Box>
                 <Box>
                   <Controller
                     control={sensor_form_api.control}
                     name="send-period"
-
-                    defaultValue={get_current_sensor_data("send-period") as number}
+                    defaultValue={
+                      get_current_sensor_data("send-period") as number
+                    }
                     render={({ field }) => (
                       <>
-                        <InputLabel htmlFor="send-period">Send Period</InputLabel>
-                        <Input
-                          {...field}
-                        />
+                        <InputLabel htmlFor="send-period">
+                          Send Period
+                        </InputLabel>
+                        <Input {...field} />
                       </>
                     )}
-
                   />
                 </Box>
                 <Box>
                   <Controller
                     control={sensor_form_api.control}
                     name="ack"
-
                     defaultValue={get_current_sensor_data("ack") as number}
                     render={({ field }) => (
                       <>
                         <InputLabel htmlFor="ack">ACK</InputLabel>
-                        <Input
-                          {...field}
-                        />
+                        <Input {...field} />
                       </>
                     )}
-
                   />
                 </Box>
               </Box>
@@ -454,35 +427,28 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
                   <Controller
                     control={sensor_form_api.control}
                     name="mov-thr"
-
                     defaultValue={get_current_sensor_data("mov-thr") as number}
                     render={({ field }) => (
                       <>
                         <InputLabel htmlFor="mov-thr">MOV THR</InputLabel>
-                        <Input
-                          {...field}
-                        />
+                        <Input {...field} />
                       </>
                     )}
-
                   />
-
                 </Box>
                 <Box>
                   <Controller
                     control={sensor_form_api.control}
                     name="adc-delay"
-
-                    defaultValue={get_current_sensor_data("adc-delay") as number}
+                    defaultValue={
+                      get_current_sensor_data("adc-delay") as number
+                    }
                     render={({ field }) => (
                       <>
                         <InputLabel htmlFor="adc-delay">ADC Delay</InputLabel>
-                        <Input
-                          {...field}
-                        />
+                        <Input {...field} />
                       </>
                     )}
-
                   />
                 </Box>
               </Box>
@@ -549,7 +515,6 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
               not Accept
             </Button>
           </Box>
-
         </Box>
       </Box>
     </form>
