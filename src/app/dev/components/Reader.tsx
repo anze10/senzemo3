@@ -1,15 +1,12 @@
 "use client";
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
-
+import Select from "react-select";
 import {
   Checkbox,
   Button,
   InputLabel,
   Input,
-  FormControl,
-  MenuItem,
-  Select,
   Box,
 } from "@mui/material";
 import { connectToPort, readDataFromPort } from "./HandleClick";
@@ -23,7 +20,6 @@ import {
   useSensorStore,
 } from "./SensorStore";
 import { set, z } from "zod";
-import { Name } from "src/server/create_foldet";
 import { Session } from "next-auth";
 
 const sensor_form_schema = z.object({
@@ -178,6 +174,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
   return (
     <form>
       <Box style={{ fontFamily: "Montserrat, sans-serif", width: "100%" }}>
+
         <Box
           style={{
             display: "flex",
@@ -549,6 +546,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
             </Box>
           </Box>
         </Box>
+      </Box>
     </form>
   );
 };
