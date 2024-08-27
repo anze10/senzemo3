@@ -4,16 +4,15 @@ import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
 
 
-export default async function  Home() {
-  const session =  await auth();
-  if (!session){
+export default async function Home() {
+  const session = await auth();
+  if (!session) {
     redirect("/")
   }
   return (
-    <div>  
-      <Reader session = {session} >
-       
-        
+    <div>
+      <Reader session={session} >
+
       </Reader>
     </div>
   );

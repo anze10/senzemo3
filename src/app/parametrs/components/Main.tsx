@@ -12,27 +12,34 @@ import {
 import { use, useState } from 'react';
 import React from 'react';
 import { useSensor } from 'src/app/components/Contexts';
+import { redirect } from "next/navigation";
+import { red } from "@mui/material/colors";
+import { useRouter } from "next/navigation";
 
 export default function Component() {
     const [sensorData, setSensorData] = useSensor();
-
+    const router = useRouter();
     const [deviceType, setDeviceType] = useState(sensorData.deviceType);
     const [dataRate, setDataRate] = useState(Number(sensorData.dataRateOptions[0]));
     const [frequencyRegion, setFrequencyRegion] = useState(sensorData.frequencyRegion);
     const [hybridEnable, setHybridEnable] = useState<string[]>(sensorData.hybridEnable ?? []);;
     const [hybridMask, setHybridMask] = useState<string[]>([]);
 
-    const updateSensorData = () => {
-        setSensorData({
-            ...sensorData,
-            deviceType,
-            dataRate,
-            frequencyRegion,
-            hybridEnable,
-            hybridMask,
-            status: 2,
-        });
+    const startScan = () => {
+        router.push('/dev');
     };
+
+    // const updateSensorData = () => {
+    //     setSensorData({
+    //         ...sensorData,
+    //         deviceType,
+    //         dataRate,
+    //         frequencyRegion,
+    //         hybridEnable,
+    //         hybridMask,
+    //         status: 2,
+    //     });
+    // };
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-4">
@@ -161,7 +168,7 @@ export default function Component() {
                         <Input id="serial-number" placeholder="(ENTER VALUE)" fullWidth />
                     </div>
                     <div className="col-span-4 flex justify-center mt-4">
-                        <Button onClick={updateSensorData}>START SCAN</Button>
+                        <Button onClick={startScan}>START SCAN</Button>
                     </div>
                 </div>
             </div>
