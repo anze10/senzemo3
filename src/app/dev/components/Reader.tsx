@@ -1,13 +1,14 @@
 "use client";
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
-import Select from "react-select";
 import {
   Checkbox,
   Button,
   InputLabel,
   Input,
   Box,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { connectToPort, readDataFromPort } from "./HandleClick";
 import parseJsonString from "./Parser";
@@ -21,11 +22,12 @@ import {
 } from "./SensorStore";
 import { set, z } from "zod";
 import { Session } from "next-auth";
+import { parseZodSchema } from "zod-key-parser";
 
-const sensor_form_schema = z.object({
-  "dev_eui": z.string(),
+export const sensor_form_schema = z.object({
+  dev_eui: z.string(),
   status: z.number(),
-  "frequency-region": z.string(),
+  "frequency-region": z.enum(["AS923", "EU868", "US915", ""]),
   temperature: z.number(),
   humidity: z.number(),
   "join-eui": z.string(),
@@ -37,10 +39,11 @@ const sensor_form_schema = z.object({
   "company-name": z.string(),
   "adc-enable": z.boolean(),
 });
+
+const parsed_sensor_schema = parseZodSchema(sensor_form_schema);
 export type SensorFormSchemaType = z.infer<typeof sensor_form_schema>;
 
 const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
-
   const portRef = useRef<SerialPort | null>(null);
 
   const GetDataFromSensor = async (onDataReceived: (data: string) => void) => {
@@ -57,16 +60,13 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     }
   };
 
-
-  const name = session?.user.name;
-
   const [showAdditionalDetails, setShowAdditionalDetails] =
     useState<boolean>(false);
 
-  const handleDataReceived = useCallback((data: string): void => {
+  /* const handleDataReceived = useCallback((data: string): void => {
     const parsedData = parseJsonString(data);
     console.log(parsedData);
-  }, []);
+  }, []); */
 
   /* const handleButtonClick = useCallback(async () => {
     await handleClick(handleDataReceived);
@@ -124,15 +124,18 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     } else return false;
   }
 
-  const get_current_sensor_data = useCallback((key: string) => {
-    return current_sensor?.data.common_data.find(
-      (key_value) => key_value.name === key,
-    )?.value;
-  }, [current_sensor])
+  const get_current_sensor_data = useCallback(
+    (key: string) => {
+      return current_sensor?.data.common_data.find(
+        (key_value) => key_value.name === key,
+      )?.value;
+    },
+    [current_sensor],
+  );
 
   const sensor_form_api = useForm<SensorFormSchemaType>();
   useEffect(() => {
-    console.log("current_sensor", current_sensor)
+    console.log("current_sensor", current_sensor);
   }, [current_sensor]);
 
   const onSubmit = async (data: SensorFormSchemaType, okay: boolean) => {
@@ -163,12 +166,12 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
 
     // set_current_sensor_index(current_sensor_index + 1);
     await GetDataFromSensor((data) => add_new_sensor(data));
-
   };
-  function updateForm(data: string): void {
-    throw new Error("Function not implemented.");
-  }
+  /*da bo ta prava verzija gor */
+  /* const updateForm = (data: string) => {
+    add_new_sensor(data);
 
+<<<<<<< HEAD
   const FrequencyRegionSelect = ({ sensor_form_api }: { sensor_form_api: any }) => {
     const options = [
       { label: "AS923", value: "AS923" },
@@ -185,6 +188,61 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
       <form>
         <Box style={{ fontFamily: "Montserrat, sans-serif", width: "100%" }}>
 
+=======
+    for (const key of data.)
+      sensor_form_api.setValue()
+  }; */
+
+  useEffect(() => {
+    if (!current_sensor?.data?.common_data) return;
+
+    for (const key in parsed_sensor_schema.keys) {
+      sensor_form_api.setValue(
+        key as keyof SensorFormSchemaType,
+        get_current_sensor_data(key) as string | number | boolean,
+      );
+    }
+  }, [
+    current_sensor?.data?.common_data,
+    get_current_sensor_data,
+    sensor_form_api,
+  ]);
+
+  return (
+    <form>
+      <Box style={{ fontFamily: "Montserrat, sans-serif", width: "100%" }}>
+        <Box
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "10px 20px",
+            backgroundColor: "#f5f5f5",
+          }}
+        >
+          <a href="/pregleduj">Pregleduj</a>
+          <Button
+            onClick={async () =>
+              await GetDataFromSensor((data) => add_new_sensor(data))
+            }
+            style={{
+              backgroundColor: "#4CAF50",
+              color: "white",
+              padding: "10px 20px",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            Open Serial Port
+          </Button>
+          <Box style={{ display: "flex", alignItems: "center" }}>
+            <span>{session?.user.name}</span>
+          </Box>
+        </Box>
+        <Box className="px-6 py-8 md:px-8 md:py-12">
+          <h1 className="mb-8 text-center text-3xl font-bold">SENZEMO</h1>
+          <h2 className="py-4">Senzor št: {current_sensor_index}</h2>
+>>>>>>> 01d24474e9317823aed0e63a9b40183d87bf820d
           <Box
             style={{
               display: "flex",
@@ -207,10 +265,24 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
                 cursor: "pointer",
               }}
             >
+<<<<<<< HEAD
               Open Serial Port
             </Button>
             <Box style={{ display: "flex", alignItems: "center" }}>
               <span>{name}</span>
+=======
+              <Controller
+                control={sensor_form_api.control}
+                name="dev_eui"
+                defaultValue={get_current_sensor_data("dev_eui") as string}
+                render={({ field }) => (
+                  <>
+                    <InputLabel htmlFor="dev_eui">Device EUI</InputLabel>
+                    <Input {...field} />
+                  </>
+                )}
+              />
+>>>>>>> 01d24474e9317823aed0e63a9b40183d87bf820d
             </Box>
           </Box>
           <Box className="px-6 py-8 md:px-8 md:py-12">
@@ -301,6 +373,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
                       getOptionLabel={(option) => option.label}
                       getOptionValue={(option) => option.value}
                     />
+<<<<<<< HEAD
                   )}
                 />
 
@@ -315,10 +388,33 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
                     {...sensor_form_api.register("frequency-region")}
                   // defaultValue={current_sensor?.data.common_data[2]?.value}
                   >
+=======
+                  </>
+                )}
+              />
+            </Box>
+            <Box
+              style={{
+                border: "1px solid black",
+                padding: "0.5rem",
+                borderRadius: "8px",
+              }}
+            >
+              <InputLabel htmlFor="frequency-region">
+                Frequency Region
+              </InputLabel>
+              <Controller
+                name="frequency-region"
+                control={sensor_form_api.control}
+                defaultValue=""
+                render={({ field }) => (
+                  <Select id="frequency-region" {...field}>
+>>>>>>> 01d24474e9317823aed0e63a9b40183d87bf820d
                     <MenuItem value="AS923">AS923</MenuItem>
                     <MenuItem value="EU868">EU868</MenuItem>
                     <MenuItem value="US915">US915</MenuItem>
                   </Select>
+<<<<<<< HEAD
                 </FormControl> */}
               </Box>
               <Box
@@ -368,6 +464,10 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
                 />
               </Box>
 
+=======
+                )}
+              />
+>>>>>>> 01d24474e9317823aed0e63a9b40183d87bf820d
             </Box>
             <Button
               onClick={() => setShowAdditionalDetails(!showAdditionalDetails)}
@@ -380,6 +480,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
                 marginTop: "20px",
               }}
             >
+<<<<<<< HEAD
               {showAdditionalDetails ? "Show Less" : "Show More"}
             </Button>
             {showAdditionalDetails && (
@@ -555,9 +656,209 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
               >
                 not Accept
               </Button>
+=======
+              <Controller
+                control={sensor_form_api.control}
+                name="temperature"
+                defaultValue={get_current_sensor_data("temperature") as number}
+                render={({ field }) => (
+                  <>
+                    <InputLabel htmlFor="temperature">Temperature</InputLabel>
+                    <Input {...field} />
+                  </>
+                )}
+              />
             </Box>
-
+            <Box
+              style={{
+                border: "1px solid black",
+                padding: "0.5rem",
+                borderRadius: "8px",
+              }}
+            >
+              <Controller
+                control={sensor_form_api.control}
+                name="humidity"
+                defaultValue={get_current_sensor_data("humidity") as number}
+                render={({ field }) => (
+                  <>
+                    <InputLabel htmlFor="humidity">Humidity</InputLabel>
+                    <Input {...field} />
+                  </>
+                )}
+              />
+>>>>>>> 01d24474e9317823aed0e63a9b40183d87bf820d
+            </Box>
           </Box>
+<<<<<<< HEAD
+=======
+          <Button
+            onClick={() => setShowAdditionalDetails(!showAdditionalDetails)}
+            style={{
+              backgroundColor: "#008CBA",
+              color: "white",
+              padding: "10px 20px",
+              border: "none",
+              cursor: "pointer",
+              marginTop: "20px",
+            }}
+          >
+            {showAdditionalDetails ? "Show Less" : "Show More"}
+          </Button>
+          {showAdditionalDetails && (
+            <Box className="mt-4">
+              <Box className="grid grid-cols-1 gap-6 md:grid-cols-4">
+                <Box>
+                  <Controller
+                    control={sensor_form_api.control}
+                    name="join-eui"
+                    defaultValue={get_current_sensor_data("join-eui") as string}
+                    render={({ field }) => (
+                      <>
+                        <InputLabel htmlFor="join-eui">Join EUI</InputLabel>
+                        <Input {...field} />
+                      </>
+                    )}
+                  />
+                </Box>
+                <Box>
+                  <Controller
+                    control={sensor_form_api.control}
+                    name="app-key"
+                    defaultValue={get_current_sensor_data("app-key") as string}
+                    render={({ field }) => (
+                      <>
+                        <InputLabel htmlFor="app-key">App Key</InputLabel>
+                        <Input {...field} />
+                      </>
+                    )}
+                  />
+                </Box>
+                <Box>
+                  <Controller
+                    control={sensor_form_api.control}
+                    name="send-period"
+                    defaultValue={
+                      get_current_sensor_data("send-period") as number
+                    }
+                    render={({ field }) => (
+                      <>
+                        <InputLabel htmlFor="send-period">
+                          Send Period
+                        </InputLabel>
+                        <Input {...field} />
+                      </>
+                    )}
+                  />
+                </Box>
+                <Box>
+                  <Controller
+                    control={sensor_form_api.control}
+                    name="ack"
+                    defaultValue={get_current_sensor_data("ack") as number}
+                    render={({ field }) => (
+                      <>
+                        <InputLabel htmlFor="ack">ACK</InputLabel>
+                        <Input {...field} />
+                      </>
+                    )}
+                  />
+                </Box>
+              </Box>
+              <Box className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
+                <Box>
+                  <Controller
+                    control={sensor_form_api.control}
+                    name="mov-thr"
+                    defaultValue={get_current_sensor_data("mov-thr") as number}
+                    render={({ field }) => (
+                      <>
+                        <InputLabel htmlFor="mov-thr">MOV THR</InputLabel>
+                        <Input {...field} />
+                      </>
+                    )}
+                  />
+                </Box>
+                <Box>
+                  <Controller
+                    control={sensor_form_api.control}
+                    name="adc-delay"
+                    defaultValue={
+                      get_current_sensor_data("adc-delay") as number
+                    }
+                    render={({ field }) => (
+                      <>
+                        <InputLabel htmlFor="adc-delay">ADC Delay</InputLabel>
+                        <Input {...field} />
+                      </>
+                    )}
+                  />
+                </Box>
+              </Box>
+              <Box className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
+                {/*To dobimo iz  parameters strani sm je treba povezavo med strannema nardit */}
+                <Box>
+                  <InputLabel htmlFor="company-name">Company Name</InputLabel>
+                  <Input
+                    id="company-name"
+                    {...sensor_form_api.register("company-name")}
+                    defaultValue={current_sensor?.data.common_data[1]?.value}
+                  />
+                </Box>
+                <Box style={{ display: "flex", alignItems: "center" }}>
+                  <Controller
+                    name="adc-enable"
+                    control={sensor_form_api.control}
+                    rules={{ required: true }}
+                    render={({ field }) => <Checkbox {...field} />}
+                  />
+                  <span>ADC Enable</span>
+                </Box>
+              </Box>
+            </Box>
+          )}
+          <Box className="mt-4 flex justify-between">
+            <Button
+              onClick={sensor_form_api.handleSubmit(
+                (data: SensorFormSchemaType) => onSubmit(data, true),
+              )}
+              style={{
+                backgroundColor: "#4CAF50",
+                color: "white",
+                padding: "10px 20px",
+              }}
+            >
+              Accept
+            </Button>
+            <Button onClick={async () => await signOut()}>Odjavi se</Button>
+            <Button
+              href="/konec"
+              onClick={async () => {
+                // await createFolderAndSpreadsheet();
+                set_current_sensor_index(0);
+              }}
+              style={{
+                backgroundColor: "#f44336",
+                color: "white",
+                padding: "10px 20px",
+              }}
+            >
+              Finish
+            </Button>
+            <Button
+              onClick={sensor_form_api.handleSubmit(
+                (data: SensorFormSchemaType) => onSubmit(data, false),
+              )}
+              style={{
+                backgroundColor: "#4CAF50",
+                color: "white",
+                padding: "10px 20px",
+              }}
+            >
+              not Accept
+            </Button>
+          </Box>
+>>>>>>> 01d24474e9317823aed0e63a9b40183d87bf820d
         </Box>
       </form>
     );
