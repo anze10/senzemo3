@@ -167,7 +167,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     // set_current_sensor_index(current_sensor_index + 1);
     await GetDataFromSensor((data) => add_new_sensor(data));
   };
-
+  /*da bo ta prava verzija gor */
   /* const updateForm = (data: string) => {
     add_new_sensor(data);
 
