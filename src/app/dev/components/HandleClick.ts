@@ -1,3 +1,5 @@
+
+
 export const connectToPort = async (): Promise<SerialPort> => {
   try {
     console.log("Requesting port...");
@@ -19,16 +21,21 @@ export const readDataFromPort = async (
   port: SerialPort,
   onDataReceived: (data: string) => void,
 ) => {
-  /* if (typeof port !== "object" || port === null) {
+  if (typeof port !== "object" || port === null) {
     console.error("Invalid port object");
     return;
-  } */
+  }
 
   const textDecoder = new TextDecoderStream();
   const readableStream = port.readable;
 
   if (!readableStream) {
     console.error("Port does not have a readable stream.");
+    return;
+  }
+
+  if (readableStream.locked) {
+    console.error("Readable stream is already locked.");
     return;
   }
 
@@ -74,10 +81,15 @@ export const readDataFromPort = async (
         }
       }
     }
+
   } catch (error) {
     console.error("Error reading data:", error);
   } finally {
+
     reader.releaseLock();
     console.log("Reader lock released.");
+
   }
+
+
 };
