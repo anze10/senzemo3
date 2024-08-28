@@ -9,6 +9,7 @@ import {
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import type { AdapterAccount } from "next-auth/adapters";
+import { use } from "react";
 
 const connectionString = process.env.DATABASE_URL!;
 const pool = postgres(connectionString, { max: 1 });
@@ -91,3 +92,31 @@ export const authenticators = pgTable(
     }),
   }),
 );
+
+
+export const devices = pgTable("device", {
+  dev_id: integer("dev_id").primaryKey(),
+  user_id: integer("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  dev_eui: text("dev_eui"),
+  family_id: integer("family_id"),
+  product_id: integer("product_id"),
+  temperature: integer("temperature"),
+  humidity: integer("humidity"),
+  join_eui: text("join_eui"),
+  app_key: text("app_key"),
+  lora_ack: integer("lora_ack"),
+  lora_send_period: integer("lora_send_period"),
+  lora_dr_adr_en: integer("lora_dr_adr_en"),
+  lora_freq_reg: text("lora_freq_reg"),
+  lora_hyb_asoff_mask0_1: integer("lora_hyb_asoff_mask0_1"),
+  lora_mask2_5: integer("lora_mask2_5"),
+  device_adc_delay: integer("device_adc_delay"),
+  device_adc_en: integer("device_adc_en"),
+  device_fw_ver: integer("device_fw_ver"),
+  device_hw_ver: integer("device_hw_ver"),
+  device_mov_thr: integer("device_mov_thr"),
+  device_status: integer("device_status"),
+});
+
