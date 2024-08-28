@@ -127,7 +127,7 @@ export function split_common_custom_sensor_data(parsed_data: ParsedDataType): {
 
   for (const key of parsed_data_keys) {
     const value = parsed_data[key];
-    if (key in parsed_sensor_schema) {
+    if (key in parsed_sensor_schema.keys) {
       const hack = common_data as Record<string, unknown>;
       hack[key] = value;
     } else {
@@ -135,9 +135,10 @@ export function split_common_custom_sensor_data(parsed_data: ParsedDataType): {
     }
   }
 
-  for (const key of Object.keys(parsed_sensor_schema)) {
+  console.log("Parsed data:", { parsed_data, common_data, custom_data });
+  for (const key of Object.keys(parsed_sensor_schema.keys)) {
     if (!(key in common_data)) {
-      throw new Error(`Missing key ${key} in parsed data`);
+      console.log(`Missing key ${key} in parsed data`);
     }
   }
 

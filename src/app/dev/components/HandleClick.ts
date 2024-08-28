@@ -1,5 +1,3 @@
-
-
 export const connectToPort = async (): Promise<SerialPort> => {
   try {
     console.log("Requesting port...");
@@ -81,15 +79,10 @@ export const readDataFromPort = async (
         }
       }
     }
-
   } catch (error) {
     console.error("Error reading data:", error);
   } finally {
-
     reader.releaseLock();
     console.log("Reader lock released.");
-
   }
-
-
 };
