@@ -1,29 +1,12 @@
-import { create, StateCreator } from "zustand";
+import { create, type StateCreator } from "zustand";
 import { produce } from "immer";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { parsed_sensor_schema, type SensorFormSchemaType } from "./Reader";
 
 export type SensorData = {
-  sensor_name: SensorModel;
-  common_data: SensorKeyValuePair[];
-  custom_data?: SensorKeyValuePair[];
+  common_data: SensorFormSchemaType;
+  custom_data?: Record<string, unknown>;
 };
-
-export type SensorKeyValuePair = {
-  name: string;
-  value: unknown;
-};
-
-export const COMMON_PROPERTIES = [
-  "app_key",
-  "dev_eui",
-  "family_id",
-  "join_eui",
-  "product_id",
-  "device",
-  "lora",
-];
-
-type SensorJSON = Record<string, unknown>;
 
 export type RatedSensorData = {
   data: SensorData;
@@ -37,25 +20,34 @@ interface SensorState {
   add_new_sensor: (data: string) => void;
   set_current_sensor_index: (new_index: number) => void;
   set_sensor_status: (sensor_number: number, okay: boolean) => void;
-  set_sensor_data: (sensor_number: number, new_data: SensorData) => void;
+  set_common_sensor_data: (
+    sensor_number: number,
+    common_data: SensorData["common_data"],
+  ) => void;
+  set_custom_sensor_data: (
+    sensor_number: number,
+    custom_data: SensorData["custom_data"],
+  ) => void;
 }
+
 const initial_state = {
   current_sensor_index: 0,
-  sensors: []
-}
-const sensor_callback: StateCreator<SensorState, [], []> = (set) => ({
+  sensors: [],
+};
+
+type ParsedDataType = SensorFormSchemaType & Record<string, unknown>;
+const sensor_callback: StateCreator<SensorState> = (set) => ({
   ...initial_state,
   reset: () => {
-    set(() => initial_state)
+    set(() => initial_state);
   },
   add_new_sensor: (data) => {
-    const parsed_data = JSON.parse(data) as SensorJSON;
-    const sensor_name = parsed_data.family_id as SensorModel;
+    const parsed_data = JSON.parse(data) as ParsedDataType;
 
-    const { common_data, custom_data } = split_common_custom(parsed_data);
+    const { common_data, custom_data } =
+      split_common_custom_sensor_data(parsed_data);
 
     const new_data: SensorData = {
-      sensor_name,
       common_data,
       custom_data,
     };
@@ -83,13 +75,23 @@ const sensor_callback: StateCreator<SensorState, [], []> = (set) => ({
       }),
     );
   },
-  set_sensor_data: (sensor_number, new_data) => {
+  set_common_sensor_data: (sensor_number, common_data) => {
     set(
       produce((state: SensorState) => {
         const this_sensor = state.sensors[sensor_number];
         if (!this_sensor) return;
 
-        this_sensor.data = new_data;
+        this_sensor.data.common_data = common_data;
+      }),
+    );
+  },
+  set_custom_sensor_data: (sensor_number, custom_data) => {
+    set(
+      produce((state: SensorState) => {
+        const this_sensor = state.sensors[sensor_number];
+        if (!this_sensor) return;
+
+        this_sensor.data.custom_data = custom_data;
       }),
     );
   },
@@ -114,21 +116,33 @@ export enum SensorModel {
   SPU10,
 }
 
-function split_common_custom(parsed_data: SensorJSON): {
-  common_data: SensorKeyValuePair[];
-  custom_data: SensorKeyValuePair[];
+export function split_common_custom_sensor_data(parsed_data: ParsedDataType): {
+  common_data: SensorFormSchemaType;
+  custom_data: Record<string, unknown>;
 } {
   const parsed_data_keys = Object.keys(parsed_data);
 
-  const common_data = parsed_data_keys
-    .filter((key) => COMMON_PROPERTIES.includes(key))
-    .map((key) => ({ name: key, value: parsed_data[key] }));
-  const custom_data = parsed_data_keys
-    .filter((key) => !COMMON_PROPERTIES.includes(key))
-    .map((key) => ({ name: key, value: parsed_data[key] }));
+  const common_data: Partial<SensorFormSchemaType> = new Object();
+  const custom_data: Record<string, unknown> = {};
+
+  for (const key of parsed_data_keys) {
+    const value = parsed_data[key];
+    if (key in parsed_sensor_schema) {
+      const hack = common_data as Record<string, unknown>;
+      hack[key] = value;
+    } else {
+      custom_data[key] = value;
+    }
+  }
+
+  for (const key of Object.keys(parsed_sensor_schema)) {
+    if (!(key in common_data)) {
+      throw new Error(`Missing key ${key} in parsed data`);
+    }
+  }
 
   return {
-    common_data,
+    common_data: common_data as SensorFormSchemaType,
     custom_data,
   };
 }
