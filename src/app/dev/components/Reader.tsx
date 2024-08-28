@@ -33,7 +33,7 @@ export const sensor_form_schema = z.object({
   "join-eui": z.string(),
   "app-key": z.string(),
   "send-period": z.number(),
-  ack: z.number(),
+  "ack": z.number(),
   "mov-thr": z.number(),
   "adc-delay": z.number(),
   "company-name": z.string(),
@@ -202,7 +202,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
             backgroundColor: "#f5f5f5",
           }}
         >
-          <a href="/pregleduj">Pregleduj</a>
+
           <Button
             onClick={async () =>
               await GetDataFromSensor((data) => add_new_sensor(data))
