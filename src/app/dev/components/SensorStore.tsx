@@ -6,6 +6,7 @@ import { parsed_sensor_schema, type SensorFormSchemaType } from "./Reader";
 export type SensorData = {
   common_data: SensorFormSchemaType;
   custom_data?: Record<string, unknown>;
+  a: boolean;
 };
 
 export type RatedSensorData = {
@@ -16,7 +17,7 @@ export type RatedSensorData = {
 // current_sensor.data === default_sensor_data
 interface SensorState {
   current_sensor_index: number;
-  default_sensor_data?: SensorData;
+  default_sensor_data?: Partial<SensorData["common_data"]>;
   sensors: RatedSensorData[];
   reset: () => void;
   add_new_sensor: (data: string) => void;
