@@ -1,8 +1,7 @@
 "use client";
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { useForm, SubmitHandler, Controller } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import {
-  Checkbox,
   Button,
   InputLabel,
   Input,
@@ -11,43 +10,41 @@ import {
   MenuItem,
 } from "@mui/material";
 import { connectToPort, readDataFromPort } from "./HandleClick";
-import parseJsonString from "./Parser";
 import { signOut } from "next-auth/react";
-import { createFolderAndSpreadsheet } from "~/server/create_foldet";
-import {
-  type SensorData,
-  type SensorKeyValuePair,
-  SensorModel,
-  useSensorStore,
-} from "./SensorStore";
-import { set, z } from "zod";
-import { Session } from "next-auth";
+import { SensorModel, useSensorStore } from "./SensorStore";
+import { z } from "zod";
+import type { Session } from "next-auth";
 import { parseZodSchema } from "zod-key-parser";
 
 export const sensor_form_schema = z.object({
-  "dev_eui": z.string(),
-  "family_id": z.number(),
-  "product_id": z.number(),
-  "temperature": z.number(),
-  "humidity": z.number(),
-  "join_eui": z.string(),
-  "app_key": z.string(),
-  "lora":
-    z.object({
-      ack: z.number(), send_period: z.number(), dr_adr_en: z.number(), freq_reg: z.enum(["AS923", "EU868", "US915", ""]), hyb_asoff_mask0_1: z.number(), mask2_5: z.number()
-    }),
-  "device":
-    z.object({
-      adc_delay: z.number(), adc_en: z.number(), fw_ver: z.number(), hw_ver: z.number(), mov_thr: z.number(), status: z.number()
-    }),
-
-
+  dev_eui: z.string(),
+  family_id: z.number(),
+  product_id: z.number(),
+  temperature: z.number(),
+  humidity: z.number(),
+  join_eui: z.string(),
+  app_key: z.string(),
+  lora: z.object({
+    ack: z.number(),
+    send_period: z.number(),
+    dr_adr_en: z.number(),
+    freq_reg: z.enum(["AS923", "EU868", "US915", ""]),
+    hyb_asoff_mask0_1: z.number(),
+    mask2_5: z.number(),
+  }),
+  device: z.object({
+    adc_delay: z.number(),
+    adc_en: z.number(),
+    fw_ver: z.number(),
+    hw_ver: z.number(),
+    mov_thr: z.number(),
+    status: z.number(),
+  }),
 
   "company-name": z.string(),
-
 });
 
-const parsed_sensor_schema = parseZodSchema(sensor_form_schema);
+export const parsed_sensor_schema = parseZodSchema(sensor_form_schema);
 export type SensorFormSchemaType = z.infer<typeof sensor_form_schema>;
 
 const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
@@ -93,7 +90,9 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
 
   const set_sensor_status = useSensorStore((state) => state.set_sensor_status);
 
-  const set_sensor_data = useSensorStore((state) => state.set_sensor_data);
+  const set_common_sensor_data = useSensorStore(
+    (state) => state.set_common_sensor_data,
+  );
 
   const set_current_sensor_index = useSensorStore(
     (state) => state.set_current_sensor_index,
@@ -108,7 +107,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     console.log(all_sensors);
   }, [all_sensors]); */
 
-  const getStatusColor = useCallback((status: number) => {
+  const getStatusColor = (status: number | undefined) => {
     switch (status) {
       case 0:
         return "green";
@@ -116,29 +115,11 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
       case 2:
         return "yellow";
       case 3:
+        return "orange";
       default:
         return "red";
     }
-  }, []);
-
-  /* function addSensor() {
-    throw new Error("Function not implemented.");
-  } */
-
-  function convertoToBoolean(value: unknown): boolean | undefined {
-    if (value === 1) {
-      return true;
-    } else return false;
-  }
-
-  const get_current_sensor_data = useCallback(
-    (key: string) => {
-      return current_sensor?.data.common_data.find(
-        (key_value) => key_value.name === key,
-      )?.value;
-    },
-    [current_sensor],
-  );
+  };
 
   const sensor_form_api = useForm<SensorFormSchemaType>();
   useEffect(() => {
@@ -151,17 +132,10 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
       current_sensor_index,
       current_sensor,
     });
+
     set_sensor_status(current_sensor_index, okay);
 
-    const keys = Object.keys(data) as (keyof SensorFormSchemaType)[];
-    set_sensor_data(current_sensor_index, {
-      sensor_name: SensorModel.SMC30, // TODO: iz katerega property data dobiš ime senzorja?
-      common_data: keys.map((key) => {
-        const value = data[key];
-        return { name: key, value } as SensorKeyValuePair;
-      }),
-      custom_data: [], // TODO: Add custom data
-    });
+    set_common_sensor_data(current_sensor_index, data);
 
     console.log("onSubmit after", {
       all_sensors,
@@ -174,7 +148,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     // set_current_sensor_index(current_sensor_index + 1);
     await GetDataFromSensor((data) => add_new_sensor(data));
   };
-  /*da bo ta prava verzija gor */
+
   /* const updateForm = (data: string) => {
     add_new_sensor(data);
 
@@ -186,16 +160,13 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     if (!current_sensor?.data?.common_data) return;
 
     for (const key in parsed_sensor_schema.keys) {
+      const safe_key = key as keyof SensorFormSchemaType;
       sensor_form_api.setValue(
-        key as keyof SensorFormSchemaType,
-        get_current_sensor_data(key) as string | number | { ack: number; send_period: number; dr_adr_en: number; freq_reg: "" | "AS923" | "EU868" | "US915"; hyb_asoff_mask0_1: number; mask2_5: number; } | { status: number; adc_delay: number; adc_en: number; fw_ver: number; hw_ver: number; mov_thr: number; },
+        safe_key,
+        current_sensor.data.common_data[safe_key],
       );
     }
-  }, [
-    current_sensor?.data?.common_data,
-    get_current_sensor_data,
-    sensor_form_api,
-  ]);
+  }, [current_sensor?.data?.common_data, sensor_form_api]);
 
   return (
     <form>
@@ -209,7 +180,6 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
             backgroundColor: "#f5f5f5",
           }}
         >
-
           <Button
             onClick={async () =>
               await GetDataFromSensor((data) => add_new_sensor(data))
@@ -239,7 +209,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
               alignItems: "center",
               justifyContent: "center",
               backgroundColor: getStatusColor(
-                current_sensor?.data.common_data[1]?.value as number,
+                current_sensor?.data.common_data.family_id,
               ),
               padding: "10px",
               borderRadius: "8px",
@@ -257,7 +227,6 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
               <Controller
                 control={sensor_form_api.control}
                 name="dev_eui"
-                defaultValue={get_current_sensor_data("dev_eui") as string}
                 render={({ field }) => (
                   <>
                     <InputLabel htmlFor="dev_eui">Device EUI</InputLabel>
@@ -277,7 +246,6 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
               <Controller
                 control={sensor_form_api.control}
                 name="device.status"
-                defaultValue={get_current_sensor_data("device.status") as number}
                 render={({ field }) => (
                   <>
                     <InputLabel htmlFor="device.status">Status</InputLabel>
@@ -327,7 +295,6 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
               <Controller
                 control={sensor_form_api.control}
                 name="temperature"
-                defaultValue={get_current_sensor_data("temperature") as number}
                 render={({ field }) => (
                   <>
                     <InputLabel htmlFor="temperature">Temperature</InputLabel>
@@ -346,7 +313,6 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
               <Controller
                 control={sensor_form_api.control}
                 name="humidity"
-                defaultValue={get_current_sensor_data("humidity") as number}
                 render={({ field }) => (
                   <>
                     <InputLabel htmlFor="humidity">Humidity</InputLabel>
@@ -376,7 +342,6 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
                   <Controller
                     control={sensor_form_api.control}
                     name="join_eui"
-                    defaultValue={get_current_sensor_data("join_eui") as string}
                     render={({ field }) => (
                       <>
                         <InputLabel htmlFor="join-eui">Join EUI</InputLabel>
@@ -389,7 +354,6 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
                   <Controller
                     control={sensor_form_api.control}
                     name="app_key"
-                    defaultValue={get_current_sensor_data("app_key") as string}
                     render={({ field }) => (
                       <>
                         <InputLabel htmlFor="app-key">App Key</InputLabel>
@@ -402,9 +366,6 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
                   <Controller
                     control={sensor_form_api.control}
                     name="lora.send_period"
-                    defaultValue={
-                      get_current_sensor_data("lora.send_period") as number
-                    }
                     render={({ field }) => (
                       <>
                         <InputLabel htmlFor="lora.send_period">
@@ -419,7 +380,6 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
                   <Controller
                     control={sensor_form_api.control}
                     name="lora.ack"
-                    defaultValue={get_current_sensor_data("lora.ack") as number}
                     render={({ field }) => (
                       <>
                         <InputLabel htmlFor="ack">ACK</InputLabel>
@@ -434,10 +394,11 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
                   <Controller
                     control={sensor_form_api.control}
                     name="device.mov_thr"
-                    defaultValue={get_current_sensor_data("device.mov_thr") as number}
                     render={({ field }) => (
                       <>
-                        <InputLabel htmlFor="device.mov_thr">MOV THR</InputLabel>
+                        <InputLabel htmlFor="device.mov_thr">
+                          MOV THR
+                        </InputLabel>
                         <Input {...field} />
                       </>
                     )}
@@ -461,14 +422,19 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
               </Box>
               <Box className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
                 {/*To dobimo iz  parameters strani sm je treba povezavo med strannema nardit */}
-                <Box>
-                  <InputLabel htmlFor="company-name">Company Name</InputLabel>
-                  <Input
-                    id="company-name"
-                    {...sensor_form_api.register("company-name")}
-                    defaultValue={current_sensor?.data.common_data[1]?.value}
-                  />
-                </Box>
+                <Controller
+                  control={sensor_form_api.control}
+                  name="device.mov_thr"
+                  render={({ field }) => (
+                    <Box>
+                      <InputLabel htmlFor="company-name">
+                        Company Name
+                      </InputLabel>
+                      <Input {...field} />
+                    </Box>
+                  )}
+                />
+
                 {/* <Box style={{ display: "flex", alignItems: "center" }}>
                   <Controller
                     name="device.adc_en"
