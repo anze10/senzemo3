@@ -13,8 +13,10 @@ export type RatedSensorData = {
   okay?: boolean;
 };
 
+// current_sensor.data === default_sensor_data
 interface SensorState {
   current_sensor_index: number;
+  default_sensor_data?: SensorData;
   sensors: RatedSensorData[];
   reset: () => void;
   add_new_sensor: (data: string) => void;
@@ -38,6 +40,7 @@ const initial_state = {
 type ParsedDataType = SensorFormSchemaType & Record<string, unknown>;
 const sensor_callback: StateCreator<SensorState> = (set) => ({
   ...initial_state,
+  default_sensor_data: undefined,
   reset: () => {
     set(() => initial_state);
   },
