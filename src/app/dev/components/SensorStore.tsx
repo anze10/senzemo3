@@ -6,7 +6,7 @@ import { parsed_sensor_schema, type SensorFormSchemaType } from "./Reader";
 export type SensorData = {
   common_data: SensorFormSchemaType;
   custom_data?: Record<string, unknown>;
-  a: boolean;
+
 };
 
 export type RatedSensorData = {
