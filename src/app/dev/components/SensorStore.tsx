@@ -20,6 +20,7 @@ interface SensorState {
   default_sensor_data?: Partial<SensorData["common_data"]>;
   sensors: RatedSensorData[];
   reset: () => void;
+  set_default_sensor_data: (data: Partial<SensorData["common_data"]>) => void;
   add_new_sensor: (data: string) => void;
   set_current_sensor_index: (new_index: number) => void;
   set_sensor_status: (sensor_number: number, okay: boolean) => void;
@@ -44,6 +45,13 @@ const sensor_callback: StateCreator<SensorState> = (set) => ({
   default_sensor_data: undefined,
   reset: () => {
     set(() => initial_state);
+  },
+  set_default_sensor_data: (data: Partial<SensorData["common_data"]>) => {
+    set(
+      produce((state: SensorState) => {
+        state.default_sensor_data = data;
+      })
+    );
   },
   add_new_sensor: (data) => {
     const parsed_data = JSON.parse(data) as ParsedDataType;

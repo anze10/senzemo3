@@ -11,10 +11,12 @@ import {
 } from "@mui/material";
 import { connectToPort, readDataFromPort } from "./HandleClick";
 import { signOut } from "next-auth/react";
-import { SensorModel, useSensorStore } from "./SensorStore";
+import { RatedSensorData, SensorModel, useSensorStore, } from "./SensorStore";
 import { z } from "zod";
 import type { Session } from "next-auth";
 import { parseZodSchema } from "zod-key-parser";
+import { is } from "drizzle-orm";
+import { error } from "console";
 
 export const sensor_form_schema = z.object({
   dev_eui: z.string(),
@@ -41,7 +43,7 @@ export const sensor_form_schema = z.object({
     status: z.number(),
   }),
 
-  "company-name": z.string(),
+  "company_name": z.string(),
 });
 
 export const parsed_sensor_schema = parseZodSchema(sensor_form_schema);
@@ -67,19 +69,15 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
   const [showAdditionalDetails, setShowAdditionalDetails] =
     useState<boolean>(false);
 
-  /* const handleDataReceived = useCallback((data: string): void => {
-    const parsedData = parseJsonString(data);
-    console.log(parsedData);
-  }, []); */
-
-  /* const handleButtonClick = useCallback(async () => {
-    await handleClick(handleDataReceived);
-  }, [handleDataReceived]); */
 
   const current_sensor_index = useSensorStore(
     (state) => state.current_sensor_index,
   );
 
+  const default_sensor_data = useSensorStore(
+    (state) => state.default_sensor_data ? [state.default_sensor_data] : undefined,
+  );
+  console.log("default_sensor_data", default_sensor_data);
   const current_sensor = useSensorStore(
     (state) => state.sensors[state.current_sensor_index],
   );
@@ -97,7 +95,34 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
   const set_current_sensor_index = useSensorStore(
     (state) => state.set_current_sensor_index,
   );
+  var deepEqual = require('deep-equal');
+  function is_equal(param1: SensorFormSchemaType | undefined, param2: SensorFormSchemaType): boolean {
 
+    for (const key in param1) {
+      if (param1 === undefined || param2 === undefined) {
+        return false;
+      }
+
+      for (const key in param1) {
+        if (param1.hasOwnProperty(key)) {
+          const value1 = param1[key as keyof typeof param1];
+          const value2 = param2[key as keyof typeof param2];
+
+          if (typeof value1 !== typeof value2) {
+            console.log(`Error: Property '${key}' has different types. Type1: ${typeof value1}, Type2: ${typeof value2}`);
+            return false;
+          }
+
+          if (!deepEqual(value1, value2)) {
+            console.log(`Error: Property '${key}' has different values. Value1: ${value1}, Value2: ${value2}`);
+            return false;
+          }
+        }
+      }
+      return true; // Return true only if all properties are equal
+    }
+
+  }
   /* useEffect(() => {
     // zamenjaj z funkcijo ki uporabi prejšn socket
     void handleClick((data) => initialize_sensor_data(data));
@@ -107,17 +132,17 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     console.log(all_sensors);
   }, [all_sensors]); */
 
-  const getStatusColor = (status: number | undefined) => {
-    switch (status) {
-      case 0:
-        return "green";
-      case 1:
-      case 2:
-        return "yellow";
-      case 3:
-        return "orange";
-      default:
-        return "red";
+  const getStatusColor = (status: number | undefined,) => {
+    const isEqual = is_equal(current_sensor?.data.common_data as SensorFormSchemaType, default_sensor_data as unknown as SensorFormSchemaType);
+
+    if (isEqual) {
+      return "green";
+    } else if (!isEqual && (status === 1 || status === 2)) {
+      return "yellow";
+    } else if (!isEqual) {
+      return "red";
+    } else {
+      return "orange";
     }
   };
 
@@ -149,9 +174,10 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     await GetDataFromSensor((data) => add_new_sensor(data));
   };
 
+
   /* const updateForm = (data: string) => {
     add_new_sensor(data);
-
+ 
     for (const key of data.)
       sensor_form_api.setValue()
   }; */
