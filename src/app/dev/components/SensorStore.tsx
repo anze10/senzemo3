@@ -6,6 +6,7 @@ import { parsed_sensor_schema, type SensorFormSchemaType } from "./Reader";
 export type SensorData = {
   common_data: SensorFormSchemaType;
   custom_data?: Record<string, unknown>;
+  a: boolean;
 };
 
 export type RatedSensorData = {
@@ -13,8 +14,10 @@ export type RatedSensorData = {
   okay?: boolean;
 };
 
+// current_sensor.data === default_sensor_data
 interface SensorState {
   current_sensor_index: number;
+  default_sensor_data?: Partial<SensorData["common_data"]>;
   sensors: RatedSensorData[];
   reset: () => void;
   add_new_sensor: (data: string) => void;
@@ -38,6 +41,7 @@ const initial_state = {
 type ParsedDataType = SensorFormSchemaType & Record<string, unknown>;
 const sensor_callback: StateCreator<SensorState> = (set) => ({
   ...initial_state,
+  default_sensor_data: undefined,
   reset: () => {
     set(() => initial_state);
   },
@@ -134,11 +138,19 @@ export function split_common_custom_sensor_data(parsed_data: ParsedDataType): {
       custom_data[key] = value;
     }
   }
+<<<<<<< HEAD
   console.log("Parsed data:", { parsed_data, common_data, custom_data });
   for (const key of Object.keys(parsed_sensor_schema.keys)) {
     if (!(key in common_data)) {
       // throw new Error(`Missing key ${key} in parsed data`);
       console.log('Missing key ${ key } in parsed data');
+=======
+
+  console.log("Parsed data:", { parsed_data, common_data, custom_data });
+  for (const key of Object.keys(parsed_sensor_schema.keys)) {
+    if (!(key in common_data)) {
+      console.log(`Missing key ${key} in parsed data`);
+>>>>>>> 605a9720e2eab6393fedb00090f94dabd8e482da
     }
   }
 
