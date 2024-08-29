@@ -96,7 +96,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     (state) => state.set_current_sensor_index,
   );
   var deepEqual = require('deep-equal');
-  function is_equal(param1: SensorFormSchemaType | undefined, param2: SensorFormSchemaType): boolean {
+  function is_equal(param1: SensorFormSchemaType, param2: SensorFormSchemaType): boolean {
 
     for (const key in param1) {
       if (param1 === undefined || param2 === undefined) {
