@@ -4,8 +4,6 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 
 
-const db = drizzle(client);
-
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
