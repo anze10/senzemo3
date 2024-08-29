@@ -121,6 +121,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
       }
       return true; // Return true only if all properties are equal
     }
+    return true;
 
   }
   /* useEffect(() => {
@@ -235,7 +236,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
               alignItems: "center",
               justifyContent: "center",
               backgroundColor: getStatusColor(
-                current_sensor?.data.common_data.family_id,
+                current_sensor?.data.common_data.device.status,
               ),
               padding: "10px",
               borderRadius: "8px",
