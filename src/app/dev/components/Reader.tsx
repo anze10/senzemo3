@@ -108,19 +108,11 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     b: Record<string, unknown>,
   ): boolean => {
     for (const key in a) {
+      if (!Object.keys(a).includes(key)) continue;
+
       const a_value = a[key];
       const b_value = b[key];
       if (typeof a_value === "undefined") continue;
-
-      if (a_value !== b_value) {
-        /* console.log(
-          "razlika",
-          safe_key,
-          current_sensor?.data.common_data[safe_key],
-          default_sensor_data[safe_key],
-        ); */
-        return false;
-      }
 
       if (typeof a_value === "object") {
         if (typeof b_value !== "object") {
@@ -131,6 +123,8 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
           a_value as Record<string, unknown>,
           b_value as Record<string, unknown>,
         );
+      } else {
+        if (a_value !== b_value) return false;
       }
     }
 
