@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import {
   Button,
@@ -11,12 +11,10 @@ import {
 } from "@mui/material";
 import { connectToPort, readDataFromPort } from "./HandleClick";
 import { signOut } from "next-auth/react";
-import { RatedSensorData, SensorModel, useSensorStore, } from "./SensorStore";
+import { useSensorStore } from "./SensorStore";
 import { z } from "zod";
 import type { Session } from "next-auth";
 import { parseZodSchema } from "zod-key-parser";
-import { is } from "drizzle-orm";
-import { error } from "console";
 
 export const sensor_form_schema = z.object({
   dev_eui: z.string(),
@@ -43,7 +41,7 @@ export const sensor_form_schema = z.object({
     status: z.number(),
   }),
 
-  "company_name": z.string(),
+  company_name: z.string(),
 });
 
 export const parsed_sensor_schema = parseZodSchema(sensor_form_schema);
@@ -69,13 +67,12 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
   const [showAdditionalDetails, setShowAdditionalDetails] =
     useState<boolean>(false);
 
-
   const current_sensor_index = useSensorStore(
     (state) => state.current_sensor_index,
   );
 
-  const default_sensor_data = useSensorStore(
-    (state) => state.default_sensor_data ? [state.default_sensor_data] : undefined,
+  const default_sensor_data = useSensorStore((state) =>
+    state.default_sensor_data ? [state.default_sensor_data] : undefined,
   );
   console.log("default_sensor_data", default_sensor_data);
   const current_sensor = useSensorStore(
@@ -95,35 +92,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
   const set_current_sensor_index = useSensorStore(
     (state) => state.set_current_sensor_index,
   );
-  var deepEqual = require('deep-equal');
-  function is_equal(param1: SensorFormSchemaType, param2: SensorFormSchemaType): boolean {
 
-    for (const key in param1) {
-      if (param1 === undefined || param2 === undefined) {
-        return false;
-      }
-
-      for (const key in param1) {
-        if (param1.hasOwnProperty(key)) {
-          const value1 = param1[key as keyof typeof param1];
-          const value2 = param2[key as keyof typeof param2];
-
-          if (typeof value1 !== typeof value2) {
-            console.log(`Error: Property '${key}' has different types. Type1: ${typeof value1}, Type2: ${typeof value2}`);
-            return false;
-          }
-
-          if (!deepEqual(value1, value2)) {
-            console.log(`Error: Property '${key}' has different values. Value1: ${value1}, Value2: ${value2}`);
-            return false;
-          }
-        }
-      }
-      return true; // Return true only if all properties are equal
-    }
-    return true;
-
-  }
   /* useEffect(() => {
     // zamenjaj z funkcijo ki uporabi prejšn socket
     void handleClick((data) => initialize_sensor_data(data));
@@ -133,14 +102,25 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     console.log(all_sensors);
   }, [all_sensors]); */
 
-  const getStatusColor = (status: number | undefined,) => {
-    const isEqual = is_equal(current_sensor?.data.common_data as SensorFormSchemaType, default_sensor_data as unknown as SensorFormSchemaType);
+  const getStatusColor = (status: number | undefined) => {
+    // const isEqual = is_equal(current_sensor?.data.common_data as SensorFormSchemaType, default_sensor_data);
+    let is_equal = true;
+    for (const key in default_sensor_data) {
+      if (
+        current_sensor?.data.common_data[key as keyof SensorFormSchemaType] !==
+        default_sensor_data[key as keyof typeof default_sensor_data]
+      ) {
+        is_equal = false;
+        break;
+      }
+    }
 
-    if (isEqual) {
+    if (is_equal) {
+      // TODO: return {color:"green", message: "OK"};
       return "green";
-    } else if (!isEqual && (status === 1 || status === 2)) {
+    } else if (!is_equal && (status === 1 || status === 2)) {
       return "yellow";
-    } else if (!isEqual) {
+    } else if (!is_equal) {
       return "red";
     } else {
       return "orange";
@@ -174,7 +154,6 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     // set_current_sensor_index(current_sensor_index + 1);
     await GetDataFromSensor((data) => add_new_sensor(data));
   };
-
 
   /* const updateForm = (data: string) => {
     add_new_sensor(data);
