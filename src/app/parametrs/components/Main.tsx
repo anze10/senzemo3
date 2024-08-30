@@ -55,7 +55,7 @@ export default function Component() {
                                 defaultValue={0}
                                 render={({ field }) => (
                                     <Select id="lora.freq_reg" {...field} fullWidth>
-                                        <MenuItem value={1}>SMC30</MenuItem>
+                                        <MenuItem value={1 as number}>SMC30</MenuItem>
                                         <MenuItem value={2}>SSM40</MenuItem>
                                         <MenuItem value={3}>SXX3.6</MenuItem>
                                     </Select>
