@@ -107,9 +107,11 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     let is_equal = true;
     for (const key in default_sensor_data) {
       const safe_key = key as keyof SensorFormSchemaType;
+      const deafultValue = default_sensor_data[safe_key];
+      if (deafultValue === undefined) continue;
       if (
         current_sensor?.data.common_data[key as keyof SensorFormSchemaType] !==
-        default_sensor_data[safe_key]
+        deafultValue
       ) {
         console.log("razlika", safe_key, current_sensor?.data.common_data[safe_key], default_sensor_data[safe_key]);
         is_equal = false;
