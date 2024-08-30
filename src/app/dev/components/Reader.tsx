@@ -102,22 +102,53 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     console.log(all_sensors);
   }, [all_sensors]); */
 
-  const getStatusColor = (status: number | undefined) => {
-    // const isEqual = is_equal(current_sensor?.data.common_data as SensorFormSchemaType, default_sensor_data);
-    let is_equal = true;
-    for (const key in default_sensor_data) {
-      const safe_key = key as keyof SensorFormSchemaType;
-      const deafultValue = default_sensor_data[safe_key];
-      if (deafultValue === undefined) continue;
-      if (
-        current_sensor?.data.common_data[key as keyof SensorFormSchemaType] !==
-        deafultValue
-      ) {
-        console.log("razlika", safe_key, current_sensor?.data.common_data[safe_key], default_sensor_data[safe_key]);
-        is_equal = false;
-        break;
+  // if values of a are undefined, don't compare them
+  const recursive_compare = (
+    a: Record<string, unknown>,
+    b: Record<string, unknown>,
+  ): boolean => {
+    for (const key in a) {
+      const a_value = a[key];
+      const b_value = b[key];
+      if (typeof a_value === "undefined") continue;
+
+      if (a_value !== b_value) {
+        /* console.log(
+          "razlika",
+          safe_key,
+          current_sensor?.data.common_data[safe_key],
+          default_sensor_data[safe_key],
+        ); */
+        return false;
+      }
+
+      if (typeof a_value === "object") {
+        if (typeof b_value !== "object") {
+          return false;
+        }
+
+        return recursive_compare(
+          a_value as Record<string, unknown>,
+          b_value as Record<string, unknown>,
+        );
       }
     }
+
+    return true;
+  };
+
+  const getStatusColor = (status: number | undefined) => {
+    // const isEqual = is_equal(current_sensor?.data.common_data as SensorFormSchemaType, default_sensor_data);
+    if (
+      typeof current_sensor === "undefined" ||
+      typeof default_sensor_data === "undefined"
+    )
+      return "orange";
+
+    const is_equal = recursive_compare(
+      default_sensor_data,
+      current_sensor?.data.common_data,
+    );
 
     if (is_equal) {
       // TODO: return {color:"green", message: "OK"};
