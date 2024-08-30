@@ -52,10 +52,10 @@ export default function Component() {
                             <Controller
                                 name="family_id"
                                 control={sensor_form_api.control}
-                                defaultValue={0}
+                                defaultValue={1}
                                 render={({ field }) => (
                                     <Select id="lora.freq_reg" {...field} fullWidth>
-                                        <MenuItem value={1 as number}>SMC30</MenuItem>
+                                        <MenuItem value={1}>SMC30</MenuItem>
                                         <MenuItem value={2}>SSM40</MenuItem>
                                         <MenuItem value={3}>SXX3.6</MenuItem>
                                     </Select>
@@ -91,12 +91,13 @@ export default function Component() {
                             <Controller
                                 control={sensor_form_api.control}
                                 name="device.status"
+                                defaultValue={0}
                                 render={({ field }) => (
                                     <>
                                         <InputLabel htmlFor="device.status">Status</InputLabel>
                                         <Input
                                             disabled
-                                            defaultValue={0}
+
                                             {...field}
                                             fullWidth
                                             placeholder="Status"
