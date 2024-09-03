@@ -10,9 +10,9 @@ import {
     Box,
     Typography,
 } from "@mui/material";
-
+import { createFolderAndSpreadsheet } from "src/server/create_foldet";
 import { useSensorStore } from "src/app/dev/components/SensorStore";
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import type { SensorFormSchemaType } from "src/app/dev/components/Reader";
@@ -21,6 +21,7 @@ export default function Component() {
 
     const default_sensor_data = useSensorStore((state) => state.default_sensor_data);
     const sensor_form_api = useForm<SensorFormSchemaType>();
+    const [order_number, set_order_number] = useState<string>("");
     const router = useRouter();
     const set_default_sensor_data = useSensorStore(
         (state) => state.set_default_sensor_data,
@@ -32,6 +33,8 @@ export default function Component() {
 
         // Log the data that was just stored in the store
         console.log("Data stored in default_sensor_data:", formData);
+        const custome_name = formData.company_name;
+        createFolderAndSpreadsheet(custome_name, order_number);
 
         router.push('/dev');
     };
@@ -54,7 +57,7 @@ export default function Component() {
                                 control={sensor_form_api.control}
                                 defaultValue={1}
                                 render={({ field }) => (
-                                    <Select id="lora.freq_reg" {...field} fullWidth>
+                                    <Select id="family_id" {...field} fullWidth>
                                         <MenuItem value={1}>SMC30</MenuItem>
                                         <MenuItem value={2}>SSM40</MenuItem>
                                         <MenuItem value={3}>SXX3.6</MenuItem>
@@ -271,6 +274,7 @@ export default function Component() {
                                                 fontSize: "1.25rem",
                                                 padding: "0.75rem",
                                             }}
+                                            required
                                         />
                                     </>
                                 )}
@@ -278,7 +282,14 @@ export default function Component() {
                         </Box>
                         <Box className="flex-1 min-w-[200px]">
                             <InputLabel htmlFor="serial-number">Order Number</InputLabel>
-                            <Input id="serial-number" placeholder="Enter Serial Number" fullWidth />
+                            <Input
+                                id="serial-number"
+                                placeholder="Enter Serial Number"
+                                fullWidth
+                                value={order_number}
+                                onChange={(e) => set_order_number(e.target.value)}
+                                required
+                            />
                         </Box>
                     </Box>
                     <Box className="flex justify-center mt-8">

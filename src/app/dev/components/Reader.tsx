@@ -50,6 +50,7 @@ export type SensorFormSchemaType = z.infer<typeof sensor_form_schema>;
 const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
   const portRef = useRef<SerialPort | null>(null);
 
+
   const GetDataFromSensor = async (onDataReceived: (data: string) => void) => {
     try {
       if (!portRef.current) {
@@ -92,6 +93,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
   const set_current_sensor_index = useSensorStore(
     (state) => state.set_current_sensor_index,
   );
+
 
   /* useEffect(() => {
     // zamenjaj z funkcijo ki uporabi prejšn socket
@@ -202,6 +204,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
       );
     }
   }, [current_sensor?.data?.common_data, sensor_form_api]);
+
 
   return (
     <form>
