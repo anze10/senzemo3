@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useSensorStore } from "../dev/components/SensorStore";
 import { useContext, useState } from "react";
 import { GoogleDriveContext } from "../_components/google_drive_context";
+import { insert } from "~/server/create_foldet";
 
 export function Konec() {
   const googleDrive = useContext(GoogleDriveContext);
@@ -18,6 +19,10 @@ export function Konec() {
 
   if (!googleDrive) return <p>Napaka z Google Drive</p>;
   const custom_FW = "NA";
+  console.log(googleDrive);
+   if(!googleDrive.googleDrive?.fileId) {
+        throw new Error("No file id");
+      }
 
   let newRowCSV = [];
   let newROWEXE = [];
@@ -98,6 +103,8 @@ export function Konec() {
         element?.data.common_data.device.adc_delay,
         element?.data.common_data.device.mov_thr,
       ];
+     
+      void insert(googleDrive.googleDrive?.fileId, newRowCSV as string[]); ;
     }
   }
 

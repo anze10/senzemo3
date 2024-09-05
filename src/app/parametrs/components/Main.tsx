@@ -305,6 +305,7 @@ function Component() {
                   custome_name,
                   order_number,
                 );
+                console.log(result);
                 googleDrive.setGoogleDrive(result);
 
                 router.push("/dev");
