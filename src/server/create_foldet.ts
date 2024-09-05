@@ -3,7 +3,14 @@ import { auth } from "~/server/auth";
 import { OAuth2Client } from "google-auth-library";
 import { google } from "googleapis";
 import * as stream from 'stream';
-import { sessions } from './db/schema';
+
+
+
+export interface GoogleDriveType {
+    folderId: string | null | undefined;
+    spreadsheetId: string | null | undefined;
+    fileId: string | null | undefined;
+}
 
 
 
@@ -241,7 +248,7 @@ async function createSpreadsheetCsv(client: OAuth2Client, folderId: string | nul
         mimeType: 'text/csv',
     };
 
-    // Optional: Create a CSV file with initial content (like headers)
+
     const media = {
         mimeType: 'text/csv',
         body: 'id,dev_eui,join_eui,name,frequency_plan_id,lorawan_version,lorawan_phy_version,app_key,brand_id,model_id,hardware_version,firmware_version,band_id\n',  // Initial CSV content (headers)
@@ -269,16 +276,7 @@ async function insertIntoCsvFile(
     const drive = google.drive({ version: 'v3', auth: client as any });
 
     try {
-        // Concept: Directly append the new row to the file in the cloud (not directly supported by Google Drive API)
-
-        // New data to append
         const newRowString = newRow.join(',') + '\n';
-
-        // Here, ideally, we would append the newRowString directly to the file on Google Drive.
-        // But Google Drive API doesn't support partial uploads or direct appends.
-
-        // Instead, the Drive API requires us to upload a complete version of the file.
-        // This involves fetching existing content, appending newRowString, and uploading the result.
 
         const response = await drive.files.get({
             fileId: fileId,
@@ -294,11 +292,8 @@ async function insertIntoCsvFile(
             response.data.on('end', resolve);
             response.data.on('error', reject);
         });
-
-        // Append new row to existing content
         const updatedCsvContent = existingCsvContent + newRowString;
 
-        // Upload updated content
         const media = {
             mimeType: 'text/csv',
             body: stream.Readable.from(updatedCsvContent),
@@ -318,6 +313,7 @@ async function insertIntoCsvFile(
 }
 // Glavna funkcija za izvajanje zgornjih korakov
 export async function createFolderAndSpreadsheet(customer_name: string, order_number: string) {
+
     const session = await auth();
     const currentTime = new Date();
     console.log({ access_token: session?.user.token });

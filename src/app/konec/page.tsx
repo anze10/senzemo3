@@ -2,10 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useSensorStore } from "../dev/components/SensorStore";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { GoogleDriveContext } from "../parametrs/components/Main";
+
+
+
 
 
 export default function KonecPage() {
+  const googleDrive = useContext(GoogleDriveContext);
+  if (!googleDrive) return null;
   const sensor_data = useSensorStore((state) => state.sensors);
   const resetStore = useSensorStore((state) => state.reset);
   const [mode_id, set_model_id] = useState<string>("");
@@ -55,7 +61,9 @@ export default function KonecPage() {
 
 
   return (
+
     <div>
+
       <h1>Konec</h1>
       <pre>{JSON.stringify(sensor_data, null, 2)}</pre>
       <button onClick={() => {
@@ -65,6 +73,8 @@ export default function KonecPage() {
         test
       </button>
     </div>
+
+
   );
 }
 
