@@ -10,37 +10,36 @@ import {
   Typography,
 } from "@mui/material";
 import { createFolderAndSpreadsheet } from "src/server/create_foldet";
-import { useSensorStore } from "src/app/dev/components/SensorStore";
-import React, { useContext, useState } from "react";
+import React, {useState } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import type { SensorFormSchemaType } from "src/app/dev/components/Reader";
-import {
-  GoogleDriveContext,
-  GoogleDriveProvider,
-} from "~/app/_components/google_drive_context";
-
+import { useSensorStore } from "~/app/dev/components/SensorStore";
+import {  useGoogleIDSstore } from "./Credentisal";
 export default function Parameters() {
   return (
-    <GoogleDriveProvider>
+   
       <Component />
-    </GoogleDriveProvider>
   );
 }
 
 function Component() {
-  /* const default_sensor_data = useSensorStore(
-    (state) => state.default_sensor_data,
-  ); */
-  const googleDrive = useContext(GoogleDriveContext);
+
+
+
+  
+ 
+  
+  
   const sensor_form_api = useForm<SensorFormSchemaType>();
   const [order_number, set_order_number] = useState<string>("");
+  
   const router = useRouter();
   const set_default_sensor_data = useSensorStore(
     (state) => state.set_default_sensor_data,
   );
 
-  if (!googleDrive) return <p>Napaka z Google Drive</p>;
+  const set_credentials = useGoogleIDSstore((state) => state.set_credentials);
 
   return (
     <form>
@@ -306,8 +305,7 @@ function Component() {
                   order_number,
                 );
                 console.log(result);
-                googleDrive.setGoogleDrive(result);
-
+               set_credentials(result);
                 router.push("/dev");
               }}
             >

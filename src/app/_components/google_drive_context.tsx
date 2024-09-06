@@ -1,12 +1,9 @@
 "use client";
 
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
+import { GoogleDriveType } from "../parametrs/components/Main";
 
-export interface GoogleDriveType {
-  folderId: string;
-  spreadsheetId: string;
-  fileId: string;
-}
+
 
 export interface GoogleDriveContextType {
   googleDrive: GoogleDriveType | null;
@@ -23,6 +20,7 @@ export function GoogleDriveProvider({
   children: React.ReactNode;
 }) {
   const [googleDrive, setGoogleDrive] = useState<GoogleDriveType | null>(null);
+  useEffect(() => {console.log("googleDrive", googleDrive)}, [googleDrive]);
 
   return (
     <GoogleDriveContext.Provider value={{ googleDrive, setGoogleDrive }}>

@@ -1,9 +1,9 @@
-import Main from "./components/Main";
+import Parameters from "./components/Main";
 
 export default function HomePage() {
   return (
     <div>
-      <Main></Main>
+      <Parameters></Parameters>
     </div>
   );
 }
