@@ -1,177 +1,319 @@
 "use client";
 
 import {
-    Checkbox,
-    Button,
-    InputLabel,
-    Input,
-    FormControl,
-    MenuItem,
-    Select,
+  Button,
+  InputLabel,
+  Input,
+  MenuItem,
+  Select,
+  Box,
+  Typography,
 } from "@mui/material";
-import { use, useState } from 'react';
-import React from 'react';
-import { useSensor } from 'src/app/components/Contexts';
-import { redirect } from "next/navigation";
-import { red } from "@mui/material/colors";
+import { createFolderAndSpreadsheet } from "src/server/create_foldet";
+import React, {useState } from "react";
 import { useRouter } from "next/navigation";
+import { Controller, useForm } from "react-hook-form";
+import type { SensorFormSchemaType } from "src/app/dev/components/Reader";
+import { useSensorStore } from "~/app/dev/components/SensorStore";
+import {  useGoogleIDSstore } from "./Credentisal";
+export default function Parameters() {
+  return (
+   
+      <Component />
+  );
+}
 
-export default function Component() {
-    const [sensorData, setSensorData] = useSensor();
-    const router = useRouter();
-    const [deviceType, setDeviceType] = useState(sensorData.deviceType);
-    const [dataRate, setDataRate] = useState(Number(sensorData.dataRateOptions[0]));
-    const [frequencyRegion, setFrequencyRegion] = useState(sensorData.frequencyRegion);
-    const [hybridEnable, setHybridEnable] = useState<string[]>(sensorData.hybridEnable ?? []);;
-    const [hybridMask, setHybridMask] = useState<string[]>([]);
+function Component() {
 
-    const startScan = () => {
-        router.push('/dev');
-    };
 
-    // const updateSensorData = () => {
-    //     setSensorData({
-    //         ...sensorData,
-    //         deviceType,
-    //         dataRate,
-    //         frequencyRegion,
-    //         hybridEnable,
-    //         hybridMask,
-    //         status: 2,
-    //     });
-    // };
 
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4">
-            <h1 className="text-3xl font-bold mb-8">SENZEMO</h1>
-            <div className="w-full max-w-5xl">
-                <h2 className="text-center text-xl font-semibold mb-4">CONFIG</h2>
-                <div className="grid grid-cols-4 gap-4">
-                    <div className="col-span-1">
-                        <FormControl fullWidth>
-                            <InputLabel htmlFor="device-type">CHOOSE DEVICE TYPE</InputLabel>
-                            <Select
-                                id="device-type"
-                                value={deviceType}
-                                onChange={(e) => setDeviceType(e.target.value)}
-                                label="CHOOSE DEVICE TYPE"
-                            >
-                                {sensorData.deviceTypeOptions.map((option) => (
-                                    <MenuItem key={option} value={option}>{option}</MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </div>
-                    <div className="col-span-1">
-                        <InputLabel htmlFor="app-eui">APP EUI</InputLabel>
-                        <Input id="app-eui" placeholder="(ENTER VALUE)" fullWidth />
-                        <p className="text-sm text-muted-foreground">optional</p>
-                    </div>
-                    <div className="col-span-1">
-                        <InputLabel htmlFor="app-key">APP KEY</InputLabel>
-                        <Input id="app-key" placeholder="(ENTER VALUE)" fullWidth />
-                        <p className="text-sm text-muted-foreground">optional</p>
-                    </div>
-                    <div className="col-span-1">
-                        <FormControl fullWidth>
-                            <InputLabel htmlFor="data-rate">DATA RATE</InputLabel>
-                            <Select
-                                id="data-rate"
-                                value={dataRate}
-                                onChange={(e) => setDataRate(e.target.value as number)}
-                                label="DATA RATE"
-                            >
-                                {sensorData.dataRateOptions.map((option) => (
-                                    <MenuItem key={option} value={option}>{option}</MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </div>
-                    <div className="col-span-1">
-                        <FormControl fullWidth>
-                            <InputLabel htmlFor="frequency-region">FREQUENCY REGION</InputLabel>
-                            <Select
-                                id="frequency-region"
-                                value={frequencyRegion}
-                                onChange={(e) => setFrequencyRegion(e.target.value)}
-                                label="FREQUENCY REGION"
-                            >
-                                <MenuItem value="eu">EU</MenuItem>
-                                <MenuItem value="us">US</MenuItem>
-                            </Select>
-                        </FormControl>
-                        <p className="text-sm text-muted-foreground">optional EU, US,...</p>
-                    </div>
-                    <div className="col-span-1">
-                        <FormControl fullWidth>
-                            <InputLabel htmlFor="hybrid-enable">HYBRID ENABLE + AS923 OFFSET + MASK0-1</InputLabel>
-                            <Select
-                                id="hybrid-enable"
-                                value={hybridEnable}
-                                onChange={(e) => setHybridEnable(e.target.value as string[])}
-                                label="HYBRID ENABLE + AS923 OFFSET + MASK0-1"
-                            >
-                                {sensorData.hybridEnable.map((option) => (
-                                    <MenuItem key={option} value={option}>{option}</MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </div>
-                    <div className="col-span-1">
-                        <FormControl fullWidth>
-                            <InputLabel htmlFor="hybrid-mask">HYBRID MASK 2-5</InputLabel>
-                            <Select
-                                id="hybrid-mask"
-                                value={hybridMask}
-                                onChange={(e) => setHybridMask(e.target.value as string[])}
-                                label="HYBRID MASK 2-5"
-                            >
-                                <MenuItem value="mask1">Mask 1</MenuItem>
-                                <MenuItem value="mask2">Mask 2</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </div>
-                    <div className="col-span-1">
-                        <InputLabel htmlFor="send-period">SEND PERIOD</InputLabel>
-                        <Input id="send-period" placeholder="(ENTER VALUE)" fullWidth />
-                    </div>
-                    <div className="col-span-1">
-                        <InputLabel htmlFor="ack">ACK</InputLabel>
-                        <Input id="ack" placeholder="(ENTER VALUE)" fullWidth />
-                    </div>
-                    <div className="col-span-1">
-                        <InputLabel htmlFor="mov-thr">MOV THR</InputLabel>
-                        <Input id="mov-thr" placeholder="(ENTER VALUE)" fullWidth />
-                    </div>
-                    <div className="col-span-1">
-                        <InputLabel htmlFor="adc-enable">ADC ENABLE</InputLabel>
-                        <div className="flex items-center space-x-2">
-                            <Checkbox id="adc-enable" />
-                            <label
-                                htmlFor="adc-enable"
-                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                            >
-                                [DEVICE SPECIFIC] SMISLENO OMOGOČITI GLEDE NA TIP
-                            </label>
-                        </div>
-                    </div>
-                    <div className="col-span-1">
-                        <InputLabel htmlFor="adc-delay">ADC delay</InputLabel>
-                        <Input id="adc-delay" placeholder="(ENTER VALUE)" fullWidth />
-                    </div>
-                    <div className="col-span-1">
-                        <InputLabel htmlFor="company-name">ENTER COMPANY NAME</InputLabel>
-                        <Input id="company-name" placeholder="(INPUT STRING)" fullWidth />
-                    </div>
-                    <div className="col-span-1">
-                        <InputLabel htmlFor="serial-number">SERIAL NUMBER</InputLabel>
-                        <Input id="serial-number" placeholder="(ENTER VALUE)" fullWidth />
-                    </div>
-                    <div className="col-span-4 flex justify-center mt-4">
-                        <Button onClick={startScan}>START SCAN</Button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+  
+ 
+  
+  
+  const sensor_form_api = useForm<SensorFormSchemaType>();
+  const [order_number, set_order_number] = useState<string>("");
+  
+  const router = useRouter();
+  const set_default_sensor_data = useSensorStore(
+    (state) => state.set_default_sensor_data,
+  );
+
+  const set_credentials = useGoogleIDSstore((state) => state.set_credentials);
+
+  return (
+    <form>
+      <Box className="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-6">
+        <Typography variant="h3" className="mb-8 font-bold">
+          SENZEMO
+        </Typography>
+        <Box className="w-full rounded-lg bg-white p-6 shadow-md">
+          <Typography variant="h5" className="mb-6 text-center font-semibold">
+            Configuration
+          </Typography>
+          <Box className="flex flex-wrap gap-6">
+            <Box className="min-w-[200px] flex-1">
+              <InputLabel htmlFor="frequency-region">Izberi senzor</InputLabel>
+              <Controller
+                name="family_id"
+                control={sensor_form_api.control}
+                defaultValue={1}
+                render={({ field }) => (
+                  <Select id="family_id" {...field} fullWidth>
+                    <MenuItem value={1}>SMC30</MenuItem>
+                    <MenuItem value={2}>SSM40</MenuItem>
+                    <MenuItem value={3}>SXX3.6</MenuItem>
+                  </Select>
+                )}
+              />
+            </Box>
+            <Box className="min-w-[200px] flex-1">
+              <Controller
+                control={sensor_form_api.control}
+                name="join_eui"
+                render={({ field }) => (
+                  <>
+                    <InputLabel htmlFor="join_eui">Join EUI</InputLabel>
+                    <Input {...field} fullWidth placeholder="Enter Join EUI" />
+                  </>
+                )}
+              />
+            </Box>
+            <Box className="min-w-[200px] flex-1">
+              <Controller
+                control={sensor_form_api.control}
+                name="app_key"
+                render={({ field }) => (
+                  <>
+                    <InputLabel htmlFor="app-key">App Key</InputLabel>
+                    <Input {...field} fullWidth placeholder="Enter App Key" />
+                  </>
+                )}
+              />
+            </Box>
+            <Box className="min-w-[200px] flex-1">
+              <Controller
+                control={sensor_form_api.control}
+                name="device.status"
+                defaultValue={0}
+                render={({ field }) => (
+                  <>
+                    <InputLabel htmlFor="device.status">Status</InputLabel>
+                    <Input
+                      disabled
+                      {...field}
+                      fullWidth
+                      placeholder="Status"
+                      style={{
+                        fontSize: "1.25rem",
+                        padding: "0.75rem",
+                      }}
+                    />
+                  </>
+                )}
+              />
+            </Box>
+            <Box className="min-w-[200px] flex-1">
+              <Controller
+                control={sensor_form_api.control}
+                name="lora.dr_adr_en"
+                render={({ field }) => (
+                  <>
+                    <InputLabel htmlFor="lora.dr_adr_en">Data Rate</InputLabel>
+                    <Input
+                      {...field}
+                      fullWidth
+                      placeholder="Data Rate"
+                      style={{
+                        fontSize: "1.25rem",
+                        padding: "0.75rem",
+                      }}
+                    />
+                  </>
+                )}
+              />
+            </Box>
+            <Box className="min-w-[200px] flex-1">
+              <InputLabel htmlFor="frequency-region">
+                Frequency Region
+              </InputLabel>
+              <Controller
+                name="lora.freq_reg"
+                control={sensor_form_api.control}
+                defaultValue=""
+                render={({ field }) => (
+                  <Select id="lora.freq_reg" {...field} fullWidth>
+                    <MenuItem value="AS923">AS923</MenuItem>
+                    <MenuItem value="EU868">EU868</MenuItem>
+                    <MenuItem value="US915">US915</MenuItem>
+                  </Select>
+                )}
+              />
+            </Box>
+            <Box className="min-w-[200px] flex-1">
+              <Controller
+                control={sensor_form_api.control}
+                name="lora.hyb_asoff_mask0_1"
+                render={({ field }) => (
+                  <>
+                    <InputLabel htmlFor="lora.hyb_asoff_mask0_1">
+                      Hybrid Enable + AS923 Offset + Mask0-1
+                    </InputLabel>
+                    <Input
+                      {...field}
+                      fullWidth
+                      placeholder="Hybrid Enable + AS923 Offset + Mask0-1"
+                      style={{
+                        fontSize: "1.25rem",
+                        padding: "0.75rem",
+                      }}
+                    />
+                  </>
+                )}
+              />
+            </Box>
+            <Box className="min-w-[200px] flex-1">
+              <Controller
+                control={sensor_form_api.control}
+                name="lora.mask2_5"
+                render={({ field }) => (
+                  <>
+                    <InputLabel htmlFor="lora.mask2_5">
+                      Hybrid Mask 2-5
+                    </InputLabel>
+                    <Input
+                      {...field}
+                      fullWidth
+                      placeholder="Hybrid Mask 2-5"
+                      style={{
+                        fontSize: "1.25rem",
+                        padding: "0.75rem",
+                      }}
+                    />
+                  </>
+                )}
+              />
+            </Box>
+            <Box className="min-w-[200px] flex-1">
+              <Controller
+                control={sensor_form_api.control}
+                name="lora.send_period"
+                render={({ field }) => (
+                  <>
+                    <InputLabel htmlFor="lora.send_period">
+                      Send Period
+                    </InputLabel>
+                    <Input
+                      {...field}
+                      fullWidth
+                      placeholder=""
+                      style={{
+                        fontSize: "1.25rem",
+                        padding: "0.75rem",
+                      }}
+                    />
+                  </>
+                )}
+              />
+            </Box>
+            <Box className="min-w-[200px] flex-1">
+              <Controller
+                control={sensor_form_api.control}
+                name="lora.ack"
+                render={({ field }) => (
+                  <>
+                    <InputLabel htmlFor="lora.ack">ACK</InputLabel>
+                    <Input
+                      {...field}
+                      fullWidth
+                      placeholder=""
+                      style={{
+                        fontSize: "1.25rem",
+                        padding: "0.75rem",
+                      }}
+                    />
+                  </>
+                )}
+              />
+            </Box>
+            <Box className="min-w-[200px] flex-1">
+              <Controller
+                control={sensor_form_api.control}
+                name="device.mov_thr"
+                render={({ field }) => (
+                  <>
+                    <InputLabel htmlFor="device.mov_thr">MOV THR</InputLabel>
+                    <Input
+                      {...field}
+                      fullWidth
+                      placeholder=""
+                      style={{
+                        fontSize: "1.25rem",
+                        padding: "0.75rem",
+                      }}
+                    />
+                  </>
+                )}
+              />
+            </Box>
+            <Box className="min-w-[200px] flex-1">
+              <Controller
+                control={sensor_form_api.control}
+                name="company_name"
+                render={({ field }) => (
+                  <>
+                    <InputLabel htmlFor="Company_name">Company Name</InputLabel>
+                    <Input
+                      {...field}
+                      fullWidth
+                      placeholder=""
+                      style={{
+                        fontSize: "1.25rem",
+                        padding: "0.75rem",
+                      }}
+                      required
+                    />
+                  </>
+                )}
+              />
+            </Box>
+            <Box className="min-w-[200px] flex-1">
+              <InputLabel htmlFor="serial-number">Order Number</InputLabel>
+              <Input
+                id="serial-number"
+                placeholder="Enter Serial Number"
+                fullWidth
+                value={order_number}
+                onChange={(e) => set_order_number(e.target.value)}
+                required
+              />
+            </Box>
+          </Box>
+          <Box className="mt-8 flex justify-center">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={async () => {
+                const formData = sensor_form_api.getValues(); // Get the current form values
+                set_default_sensor_data(formData); // Update the store with form data
+
+                // Log the data that was just stored in the store
+                console.log("Data stored in default_sensor_data:", formData);
+                const custome_name = formData.company_name;
+                const result = await createFolderAndSpreadsheet(
+                  custome_name,
+                  order_number,
+                );
+                console.log(result);
+               set_credentials(result);
+                router.push("/dev");
+              }}
+            >
+              Start Scan
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    </form>
+  );
 }

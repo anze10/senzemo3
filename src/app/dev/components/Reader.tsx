@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import {
   Button,
@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import { connectToPort, readDataFromPort } from "./HandleClick";
 import { signOut } from "next-auth/react";
-import { SensorModel, useSensorStore } from "./SensorStore";
+import { useSensorStore } from "./SensorStore";
 import { z } from "zod";
 import type { Session } from "next-auth";
 import { parseZodSchema } from "zod-key-parser";
@@ -41,7 +41,7 @@ export const sensor_form_schema = z.object({
     status: z.number(),
   }),
 
-  "company-name": z.string(),
+  company_name: z.string(),
 });
 
 export const parsed_sensor_schema = parseZodSchema(sensor_form_schema);
@@ -49,6 +49,7 @@ export type SensorFormSchemaType = z.infer<typeof sensor_form_schema>;
 
 const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
   const portRef = useRef<SerialPort | null>(null);
+
 
   const GetDataFromSensor = async (onDataReceived: (data: string) => void) => {
     try {
@@ -67,19 +68,14 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
   const [showAdditionalDetails, setShowAdditionalDetails] =
     useState<boolean>(false);
 
-  /* const handleDataReceived = useCallback((data: string): void => {
-    const parsedData = parseJsonString(data);
-    console.log(parsedData);
-  }, []); */
-
-  /* const handleButtonClick = useCallback(async () => {
-    await handleClick(handleDataReceived);
-  }, [handleDataReceived]); */
-
   const current_sensor_index = useSensorStore(
     (state) => state.current_sensor_index,
   );
 
+  const default_sensor_data = useSensorStore(
+    (state) => state.default_sensor_data,
+  );
+  console.log("default_sensor_data", default_sensor_data);
   const current_sensor = useSensorStore(
     (state) => state.sensors[state.current_sensor_index],
   );
@@ -98,6 +94,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     (state) => state.set_current_sensor_index,
   );
 
+
   /* useEffect(() => {
     // zamenjaj z funkcijo ki uporabi prejšn socket
     void handleClick((data) => initialize_sensor_data(data));
@@ -107,17 +104,57 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     console.log(all_sensors);
   }, [all_sensors]); */
 
+  // if values of a are undefined, don't compare them
+  const recursive_compare = (
+    a: Record<string, unknown>,
+    b: Record<string, unknown>,
+  ): boolean => {
+    for (const key in a) {
+      if (!Object.keys(a).includes(key)) continue;
+
+      const a_value = a[key];
+      const b_value = b[key];
+      if (typeof a_value === "undefined") continue;
+
+      if (typeof a_value === "object") {
+        if (typeof b_value !== "object") {
+          return false;
+        }
+
+        return recursive_compare(
+          a_value as Record<string, unknown>,
+          b_value as Record<string, unknown>,
+        );
+      } else {
+        if (a_value !== b_value) return false;
+      }
+    }
+
+    return true;
+  };
+
   const getStatusColor = (status: number | undefined) => {
-    switch (status) {
-      case 0:
-        return "green";
-      case 1:
-      case 2:
-        return "yellow";
-      case 3:
-        return "orange";
-      default:
-        return "red";
+    // const isEqual = is_equal(current_sensor?.data.common_data as SensorFormSchemaType, default_sensor_data);
+    if (
+      typeof current_sensor === "undefined" ||
+      typeof default_sensor_data === "undefined"
+    )
+      return "orange";
+
+    const is_equal = recursive_compare(
+      default_sensor_data,
+      current_sensor?.data.common_data,
+    );
+
+    if (is_equal) {
+      // TODO: return {color:"green", message: "OK"};
+      return "green";
+    } else if (!is_equal && (status === 1 || status === 2)) {
+      return "yellow";
+    } else if (!is_equal) {
+      return "red";
+    } else {
+      return "orange";
     }
   };
 
@@ -151,7 +188,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
 
   /* const updateForm = (data: string) => {
     add_new_sensor(data);
-
+ 
     for (const key of data.)
       sensor_form_api.setValue()
   }; */
@@ -167,6 +204,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
       );
     }
   }, [current_sensor?.data?.common_data, sensor_form_api]);
+
 
   return (
     <form>
@@ -209,7 +247,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
               alignItems: "center",
               justifyContent: "center",
               backgroundColor: getStatusColor(
-                current_sensor?.data.common_data.family_id,
+                current_sensor?.data.common_data.device.status,
               ),
               padding: "10px",
               borderRadius: "8px",
