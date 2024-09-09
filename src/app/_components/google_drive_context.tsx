@@ -1,30 +1,30 @@
-"use client";
+// "use client";
 
-import { createContext, useEffect, useState } from "react";
-import { GoogleDriveType } from "../parametrs/components/Main";
+// import { createContext, useEffect, useState } from "react";
+// import { GoogleDriveType } from "../parametrs/components/Main";
 
 
 
-export interface GoogleDriveContextType {
-  googleDrive: GoogleDriveType | null;
-  setGoogleDrive: (value: GoogleDriveType) => void;
-}
+// export interface GoogleDriveContextType {
+//   googleDrive: GoogleDriveType | null;
+//   setGoogleDrive: (value: GoogleDriveType) => void;
+// }
 
-export const GoogleDriveContext = createContext<GoogleDriveContextType | null>(
-  null,
-);
+// export const GoogleDriveContext = createContext<GoogleDriveContextType | null>(
+//   null,
+// );
 
-export function GoogleDriveProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [googleDrive, setGoogleDrive] = useState<GoogleDriveType | null>(null);
-  useEffect(() => {console.log("googleDrive", googleDrive)}, [googleDrive]);
+// export function GoogleDriveProvider({
+//   children,
+// }: {
+//   children: React.ReactNode;
+// }) {
+//   const [googleDrive, setGoogleDrive] = useState<GoogleDriveType | null>(null);
+//   useEffect(() => {console.log("googleDrive", googleDrive)}, [googleDrive]);
 
-  return (
-    <GoogleDriveContext.Provider value={{ googleDrive, setGoogleDrive }}>
-      {children}
-    </GoogleDriveContext.Provider>
-  );
-}
+//   return (
+//     <GoogleDriveContext.Provider value={{ googleDrive, setGoogleDrive }}>
+//       {children}
+//     </GoogleDriveContext.Provider>
+//   );
+// }
