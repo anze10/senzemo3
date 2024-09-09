@@ -115,6 +115,29 @@ async function createSpreadsheet(
         fields: "userEnteredFormat(textFormat,horizontalAlignment)",
       },
     }));
+    // const overlapcel = {
+    //   updateCells: {
+    //     range: {
+    //       sheetId: 0, // Assuming this is the first sheet, update the sheetId if necessary
+    //       startRowIndex: 2, // B3 is row 3 (0-based index)
+    //       endRowIndex: 3,   // End at the next row
+    //       startColumnIndex: 1, // B is the 2nd column (0-based index)
+    //       endColumnIndex: 2,   // End at the next column
+    //     },
+    //     rows: [
+    //       {
+    //         values: [
+    //           {
+    //             userEnteredFormat: {
+    //               wrapStrategy: "CLIP", // This will make the text overflow (clip instead of wrap)
+    //             },
+    //           },
+    //         ],
+    //       },
+    //     ],
+    //     fields: "userEnteredFormat.wrapStrategy",
+    //   },
+    // };
 
     // Bold, background color, and alignment formatting for header row A9:L9
     const headerFormattingRequest = {
@@ -241,6 +264,7 @@ async function createSpreadsheet(
       requestBody: {
         requests: [
           ...boldRightAlignRequests,
+          // overlapcel,
           headerFormattingRequest,
           resizeColumnsRequests,
           mergeCellsRequest,
@@ -254,6 +278,89 @@ async function createSpreadsheet(
   } catch (err) {
     console.error("Google spreadsheet error", err);
     throw err;
+  }
+}
+async function insertIntoSpreadsheet(
+  client: OAuth2Client,
+  spreadsheetId: string,
+  newRow: string[],
+): Promise<void> {
+  const sheets = google.sheets({ version: "v4", auth: client as any });
+
+  try {
+    // Fetch current data from the spreadsheet to determine the next empty row
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: spreadsheetId,
+      range: "A9:A", // Check starting from row 8
+    });
+
+    const rows = response.data.values || [];
+    const nextRow = rows.length + 9; // Calculate the next available row
+
+    const data = [
+      {
+        range: `A${nextRow}`,
+        values: [newRow],
+      },
+    ];
+
+    // Insert new row into the spreadsheet
+    await sheets.spreadsheets.values.batchUpdate({
+      spreadsheetId: spreadsheetId,
+      requestBody: {
+        valueInputOption: "USER_ENTERED",
+        data: data,
+      },
+    });
+
+    console.log(`Inserted new row at row ${nextRow}`);
+
+    // Resize columns (handled in a separate call)
+    const resizeColumnsRequests = {
+      updateDimensionProperties: {
+        range: {
+          sheetId: 0,
+          dimension: "COLUMNS",
+          startIndex: 0, // Start at column A
+          endIndex: 12, // End at column L
+        },
+        properties: {
+          pixelSize: 150, // Set a specific pixel width for each column
+        },
+        fields: "pixelSize",
+      },
+    };
+    const AlignmentRequest = {
+      repeatCell: {
+        range: {
+          sheetId: 0,
+          startRowIndex: 9, // Start at row 0 (A1)
+          endRowIndex: nextRow, // End at row 2 (B2)
+          startColumnIndex: 0, // Start at column A
+          endColumnIndex: 12, // End at column B
+        },
+        cell: {
+          userEnteredFormat: {
+            horizontalAlignment: "CENTER",
+            verticalAlignment: "MIDDLE",
+          },
+        },
+        fields: "userEnteredFormat(horizontalAlignment,verticalAlignment)",
+      },
+    };
+
+    // Perform the column resizing operation
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: spreadsheetId,
+      requestBody: {
+        requests: [resizeColumnsRequests, AlignmentRequest],
+      },
+    });
+
+
+  } catch (error) {
+    console.error("Error inserting new row into the spreadsheet:", error);
+    throw error;
   }
 }
 
@@ -380,7 +487,7 @@ export async function createFolderAndSpreadsheet(
   }
 }
 
-export async function insert(fileId: string, newRow: string[]) {
+export async function insert(fileId: string, newRow: string[], spreadsheetId: string, nerEXE: string[]) {
   const session = await auth();
   console.log({ access_token: session?.user.token });
   const client = new OAuth2Client({});
@@ -390,11 +497,11 @@ export async function insert(fileId: string, newRow: string[]) {
   });
 
   const tokenInfo = await client.getTokenInfo(session?.user.token!);
-  const name = session?.user.name;
   console.log(tokenInfo);
 
   try {
     await insertIntoCsvFile(client, fileId, newRow);
+    await insertIntoSpreadsheet(client, spreadsheetId, nerEXE);
   } catch (err) {
     console.error(err);
     throw err;

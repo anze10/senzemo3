@@ -68,6 +68,7 @@ export function Konec() {
           device_name,
           frequancy_plan_id,
           lorawan_version,
+          "unknown",
           element?.data.common_data?.app_key,
           "Senzemo",
           model_id,
@@ -84,26 +85,6 @@ export function Konec() {
           "FSB2",
           element?.data.common_data?.device.hw_ver,
           element?.data.common_data.device.fw_ver,
-          element?.data.common_data?.device.hw_ver,
-          element?.data.common_data.device.fw_ver,
-          element?.data.common_data?.device.hw_ver,
-          element?.data.common_data.device.fw_ver,
-          element?.data.common_data?.device.hw_ver,
-          element?.data.common_data.device.fw_ver,
-          element?.data.common_data?.device.hw_ver,
-          element?.data.common_data.device.fw_ver,
-          element?.data.common_data?.device.hw_ver,
-          element?.data.common_data.device.fw_ver,
-          element?.data.common_data?.device.hw_ver,
-          element?.data.common_data.device.fw_ver,
-          element?.data.common_data?.device.hw_ver,
-          element?.data.common_data.device.fw_ver,
-          element?.data.common_data?.device.hw_ver,
-          element?.data.common_data.device.fw_ver,
-          element?.data.common_data?.device.hw_ver,
-          element?.data.common_data.device.fw_ver,
-          element?.data.common_data?.device.hw_ver,
-          element?.data.common_data.device.fw_ver,
           custom_FW,
           element?.data.common_data?.lora.send_period,
           element?.data.common_data.device.adc_delay,
@@ -112,7 +93,7 @@ export function Konec() {
         if (!credentials?.fileId) {
           throw new Error("No credentials");
         }
-        void insert(credentials?.fileId, newRowCSV as string[]);;
+        void insert(credentials?.fileId, newRowCSV as string[], credentials?.spreadsheetId, newROWEXE as string[]);
       }
     }
   }, [sensor_data, credentials?.fileId])

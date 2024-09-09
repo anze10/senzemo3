@@ -146,19 +146,13 @@ export function split_common_custom_sensor_data(parsed_data: ParsedDataType): {
       custom_data[key] = value;
     }
   }
-<<<<<<< HEAD
-  console.log("Parsed data:", { parsed_data, common_data, custom_data });
-  for (const key of Object.keys(parsed_sensor_schema.keys)) {
-    if (!(key in common_data)) {
-      // throw new Error(`Missing key ${key} in parsed data`);
-      console.log('Missing key ${ key } in parsed data');
-=======
+
 
   console.log("Parsed data:", { parsed_data, common_data, custom_data });
   for (const key of Object.keys(parsed_sensor_schema.keys)) {
     if (!(key in common_data)) {
       console.log(`Missing key ${key} in parsed data`);
->>>>>>> 605a9720e2eab6393fedb00090f94dabd8e482da
+
     }
   }
 
