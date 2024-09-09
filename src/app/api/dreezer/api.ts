@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { devices } from 'src/server/db/schema';
+import { db, devices } from 'src/server/db/schema';
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 
