@@ -154,7 +154,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
     } else if (!is_equal) {
       return "red";
     } else {
-      return "orange";
+      return "white";
     }
   };
 
