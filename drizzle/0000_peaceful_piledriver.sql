@@ -27,27 +27,8 @@ CREATE TABLE IF NOT EXISTS "authenticator" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "device" (
-	"dev_id" integer PRIMARY KEY NOT NULL,
-	"user_id" integer NOT NULL,
-	"dev_eui" text,
-	"family_id" integer,
-	"product_id" integer,
-	"temperature" integer,
-	"humidity" integer,
-	"join_eui" text,
-	"app_key" text,
-	"lora_ack" integer,
-	"lora_send_period" integer,
-	"lora_dr_adr_en" integer,
-	"lora_freq_reg" text,
-	"lora_hyb_asoff_mask0_1" integer,
-	"lora_mask2_5" integer,
-	"device_adc_delay" integer,
-	"device_adc_en" integer,
-	"device_fw_ver" integer,
-	"device_hw_ver" integer,
-	"device_mov_thr" integer,
-	"device_status" integer
+  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "properties" JSONB
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "session" (

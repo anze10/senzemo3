@@ -94,7 +94,7 @@ export const authenticators = pgTable(
   }),
 );
 
-// default values for sensor type
+
 export const devices = pgTable("device", {
   id: text("id")
     .primaryKey()
