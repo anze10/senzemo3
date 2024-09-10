@@ -1,16 +1,16 @@
 "use server";
 import { auth } from "~/server/auth";
-import { google } from "googleapis";
+import { type Auth, google } from "googleapis";
 import * as stream from "stream";
-import { OAuth2Client } from "google-auth-library";
 
 // Funkcija za ustvarjanje mape
 async function createFolder(
-  client: OAuth2Client,
+  client: Auth.OAuth2Client,
   customer_name: string,
   order_number: string,
 ) {
-  const service = google.drive({ version: "v3", auth: client as any });
+  // @ts-expect-error auth client type
+  const service = google.drive({ version: "v3", auth: client });
   const fileMetadata = {
     name: customer_name + "   " + order_number,
     mimeType: "application/vnd.google-apps.folder",
@@ -30,15 +30,17 @@ async function createFolder(
 
 // Funkcija za ustvarjanje preglednice znotraj določene mape
 async function createSpreadsheet(
-  client: OAuth2Client,
+  client: Auth.OAuth2Client,
   folderId: string | null | undefined,
   customer_name: string,
   order_number: string,
   currentTime: Date,
   name: string,
 ) {
-  const service = google.drive({ version: "v3", auth: client as any });
-  const sheets = google.sheets({ version: "v4", auth: client as any });
+  // @ts-expect-error auth client type
+  const service = google.drive({ version: "v3", auth: client });
+  // @ts-expect-error auth client type
+  const sheets = google.sheets({ version: "v4", auth: client });
 
   const fileMetadata = {
     name: "Order " + order_number + "-" + "Device list",
@@ -281,11 +283,12 @@ async function createSpreadsheet(
   }
 }
 async function insertIntoSpreadsheet(
-  client: OAuth2Client,
+  client: Auth.OAuth2Client,
   spreadsheetId: string,
   newRow: string[],
 ): Promise<void> {
-  const sheets = google.sheets({ version: "v4", auth: client as any });
+  // @ts-expect-error auth client type
+  const sheets = google.sheets({ version: "v4", auth: client });
 
   try {
     // Fetch current data from the spreadsheet to determine the next empty row
@@ -294,7 +297,7 @@ async function insertIntoSpreadsheet(
       range: "A9:A", // Check starting from row 8
     });
 
-    const rows = response.data.values || [];
+    const rows = response.data.values ?? [];
     const nextRow = rows.length + 9; // Calculate the next available row
 
     const data = [
@@ -356,8 +359,6 @@ async function insertIntoSpreadsheet(
         requests: [resizeColumnsRequests, AlignmentRequest],
       },
     });
-
-
   } catch (error) {
     console.error("Error inserting new row into the spreadsheet:", error);
     throw error;
@@ -365,11 +366,12 @@ async function insertIntoSpreadsheet(
 }
 
 async function createSpreadsheetCsv(
-  client: OAuth2Client,
+  client: Auth.OAuth2Client,
   folderId: string | null | undefined,
   order_number: string,
 ) {
-  const service = google.drive({ version: "v3", auth: client as any });
+  // @ts-expect-error auth client type
+  const service = google.drive({ version: "v3", auth: client });
   const fileMetadata = {
     name: "Order " + order_number + "-" + "TTN import" + ".csv",
     parents: folderId ? [folderId] : undefined,
@@ -397,11 +399,12 @@ async function createSpreadsheetCsv(
 }
 
 async function insertIntoCsvFile(
-  client: OAuth2Client,
+  client: Auth.OAuth2Client,
   fileId: string,
   newRow: string[],
 ): Promise<void> {
-  const drive = google.drive({ version: "v3", auth: client as any });
+  // @ts-expect-error auth client type
+  const drive = google.drive({ version: "v3", auth: client });
 
   try {
     const newRowString = newRow.join(",") + "\n";
@@ -451,7 +454,7 @@ export async function createFolderAndSpreadsheet(
   //   console.log({ access_token: session?.user.token });
 
   // const google_client = new google.auth.OAuth2();
-  const client = new OAuth2Client({});
+  const client = new google.auth.OAuth2() as unknown as Auth.OAuth2Client;
 
   client.setCredentials({
     access_token: session?.user.token,
@@ -487,16 +490,23 @@ export async function createFolderAndSpreadsheet(
   }
 }
 
-export async function insert(fileId: string, newRow: string[], spreadsheetId: string, nerEXE: string[]) {
+export async function insert(
+  fileId: string,
+  newRow: string[],
+  spreadsheetId: string,
+  nerEXE: string[],
+) {
   const session = await auth();
   console.log({ access_token: session?.user.token });
-  const client = new OAuth2Client({});
+  const client = new google.auth.OAuth2() as unknown as Auth.OAuth2Client;
 
   client.setCredentials({
     access_token: session?.user.token,
   });
 
-  const tokenInfo = await client.getTokenInfo(session?.user.token!);
+  if (!session?.user.token) throw new Error("No access token");
+
+  const tokenInfo = await client.getTokenInfo(session?.user.token);
   console.log(tokenInfo);
 
   try {
