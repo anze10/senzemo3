@@ -16,16 +16,16 @@ export async function create_spreatsheet() {
   console.log(tokenInfo);
 
   const service = google.sheets({ version: "v4", auth: client as any });
-  const resource = {
-    properties: {
-      title: "New Spreadshit",
-    },
-  };
 
   try {
     const spreadsheet = await service.spreadsheets
       .create({
-        resource,
+        // resource,
+        requestBody: {
+          properties: {
+            title: "New Spreadshit",
+          },
+        },
         fields: "spreadsheetId",
       })
       .then((response) => {
