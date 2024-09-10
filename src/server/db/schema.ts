@@ -10,7 +10,7 @@ import {
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import type { AdapterAccount } from "next-auth/adapters";
-import { type SensorData } from "~/app/dev/components/SensorStore";
+import { SensorData } from "~/app/dev/components/SensorStore";
 
 const connectionString = process.env.DATABASE_URL!;
 const pool = postgres(connectionString, { max: 1 });
@@ -94,7 +94,7 @@ export const authenticators = pgTable(
   }),
 );
 
-// default values for sensor type
+
 export const devices = pgTable("device", {
   id: text("id")
     .primaryKey()
