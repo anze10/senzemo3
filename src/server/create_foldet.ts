@@ -448,7 +448,7 @@ export async function createFolderAndSpreadsheet(
   //   console.log({ access_token: session?.user.token });
 
   // const google_client = new google.auth.OAuth2();
-  const client = new google.auth.OAuth2() as unknown as Auth.OAuth2Client;
+  const client = new google.auth.OAuth2();
 
   client.setCredentials({
     access_token: session?.user.token,
@@ -492,7 +492,7 @@ export async function insert(
 ) {
   const session = await auth();
   console.log({ access_token: session?.user.token });
-  const client = new google.auth.OAuth2() as unknown as Auth.OAuth2Client;
+  const client = new google.auth.OAuth2();
 
   client.setCredentials({
     access_token: session?.user.token,
