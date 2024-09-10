@@ -2,7 +2,7 @@
 import { Button } from "@mui/material";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { JSX, SVGProps } from "react";
+import { type JSX, type SVGProps } from "react";
 import Link from "next/link";
 
 
