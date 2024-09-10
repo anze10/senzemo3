@@ -9,7 +9,6 @@ async function createFolder(
   customer_name: string,
   order_number: string,
 ) {
-  // @ts-expect-error auth client type
   const service = google.drive({ version: "v3", auth: client });
   const fileMetadata = {
     name: customer_name + "   " + order_number,
@@ -37,9 +36,7 @@ async function createSpreadsheet(
   currentTime: Date,
   name: string,
 ) {
-  // @ts-expect-error auth client type
   const service = google.drive({ version: "v3", auth: client });
-  // @ts-expect-error auth client type
   const sheets = google.sheets({ version: "v4", auth: client });
 
   const fileMetadata = {
@@ -287,7 +284,6 @@ async function insertIntoSpreadsheet(
   spreadsheetId: string,
   newRow: string[],
 ): Promise<void> {
-  // @ts-expect-error auth client type
   const sheets = google.sheets({ version: "v4", auth: client });
 
   try {
@@ -370,7 +366,6 @@ async function createSpreadsheetCsv(
   folderId: string | null | undefined,
   order_number: string,
 ) {
-  // @ts-expect-error auth client type
   const service = google.drive({ version: "v3", auth: client });
   const fileMetadata = {
     name: "Order " + order_number + "-" + "TTN import" + ".csv",
@@ -403,7 +398,6 @@ async function insertIntoCsvFile(
   fileId: string,
   newRow: string[],
 ): Promise<void> {
-  // @ts-expect-error auth client type
   const drive = google.drive({ version: "v3", auth: client });
 
   try {
