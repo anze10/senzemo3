@@ -10,16 +10,17 @@ import {
   Typography,
 } from "@mui/material";
 import { createFolderAndSpreadsheet } from "src/server/create_foldet";
-import React, {useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import type { SensorFormSchemaType } from "src/app/dev/components/Reader";
 import { useSensorStore } from "~/app/dev/components/SensorStore";
-import {  useGoogleIDSstore } from "./Credentisal";
+import { useGoogleIDSstore } from "./Credentisal";
+
 export default function Parameters() {
   return (
-   
-      <Component />
+
+    <Component />
   );
 }
 
@@ -27,13 +28,13 @@ function Component() {
 
 
 
-  
- 
-  
-  
+
+
+
+
   const sensor_form_api = useForm<SensorFormSchemaType>();
   const [order_number, set_order_number] = useState<string>("");
-  
+
   const router = useRouter();
   const set_default_sensor_data = useSensorStore(
     (state) => state.set_default_sensor_data,
@@ -305,12 +306,13 @@ function Component() {
                   order_number,
                 );
                 console.log(result);
-               set_credentials(result);
+                set_credentials(result);
                 router.push("/dev");
               }}
             >
               Start Scan
             </Button>
+
           </Box>
         </Box>
       </Box>
