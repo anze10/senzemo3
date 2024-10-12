@@ -1,6 +1,7 @@
 export const connectToPort = async (): Promise<SerialPort> => {
   try {
-    console.log("Requesting port...");
+    console.log("Requesting port...", navigator.serial);
+
     const port = await navigator.serial.requestPort();
     console.log("Port requested:", port);
 
