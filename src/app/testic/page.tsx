@@ -1,12 +1,11 @@
 
-import dynamic from 'next/dynamic';
-const SerialPort = dynamic(() => import('./components/testComponent'), { ssr: false });
+import PrinterListClient from './components/PrinterList';
 
-export default function Home() {
+export default async function Home() {
     return (
         <div>
             <h1>Printer Management</h1>
-            <SerialPort />
+            <PrinterListClient />
         </div>
     );
 }
