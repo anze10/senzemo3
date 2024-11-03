@@ -1,17 +1,19 @@
-import Image from "next/image";
+
 import Reader from "./components/Reader";
 import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
+import Navbar from "./components/Navbar";
 
 
 export default async function Home() {
-  const session = await auth();
-  if (!session) {
+  const Session = await auth();
+  if (!Session) {
     redirect("/")
   }
   return (
     <div>
-      <Reader session={session} >
+      <Navbar session={Session} ></Navbar>
+      <Reader  >
 
       </Reader>
     </div>

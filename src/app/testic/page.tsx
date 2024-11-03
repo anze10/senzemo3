@@ -1,5 +1,5 @@
 
-import PrinterListClient from './components/PrinterList';
+import PrinterListClient from '../dev/components/printer/PrinterList';
 
 export default async function Home() {
     return (

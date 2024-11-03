@@ -13,7 +13,7 @@ import { connectToPort, readDataFromPort } from "./HandleClick";
 import { signOut } from "next-auth/react";
 import { useSensorStore } from "./SensorStore";
 import { z } from "zod";
-import type { Session } from "next-auth";
+// import type { Session } from "next-auth";
 import { parseZodSchema } from "zod-key-parser";
 
 export const sensor_form_schema = z.object({
@@ -47,7 +47,7 @@ export const sensor_form_schema = z.object({
 export const parsed_sensor_schema = parseZodSchema(sensor_form_schema);
 export type SensorFormSchemaType = z.infer<typeof sensor_form_schema>;
 
-const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
+const SerialPortComponent = ()=> {
   const portRef = useRef<SerialPort | null>(null);
 
 
@@ -209,7 +209,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
   return (
     <form>
       <Box style={{ fontFamily: "Montserrat, sans-serif", width: "100%" }}>
-        <Box
+        {/* <Box
           style={{
             display: "flex",
             justifyContent: "space-between",
@@ -235,7 +235,7 @@ const SerialPortComponent: React.FC<{ session?: Session }> = ({ session }) => {
           <Box style={{ display: "flex", alignItems: "center" }}>
             <span>{session?.user.name}</span>
           </Box>
-        </Box>
+        </Box> */}
         <Box className="px-6 py-8 md:px-8 md:py-12">
           <h1 className="mb-8 text-center text-3xl font-bold">SENZEMO</h1>
           <h2 className="py-4">Senzor št: {current_sensor_index}</h2>
