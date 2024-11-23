@@ -28,7 +28,11 @@ CREATE TABLE IF NOT EXISTS "authenticator" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "device" (
   "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  "properties" JSONB
+  "name" TEXT,
+  "familyId" NUMBER NOT NULL,
+  "productId" NUMBER NOT NULL,
+  "properties" JSONB,
+  "decoder" TEXT NOT NULL,
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "session" (

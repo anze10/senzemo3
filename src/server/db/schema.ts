@@ -12,6 +12,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import type { AdapterAccount } from "next-auth/adapters";
 import { type SensorData } from "~/app/dev/components/SensorStore";
 
+
 const connectionString = process.env.DATABASE_URL!;
 const pool = postgres(connectionString, { max: 1 });
 
@@ -99,5 +100,9 @@ export const devices = pgTable("device", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
+  familyId: integer("familyId").notNull(),
+  productId: integer("productId").notNull(),
   properties: json("properties").$type<SensorData>(),
+  decoder: text("decoder").notNull(),
 });
